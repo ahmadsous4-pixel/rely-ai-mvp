@@ -1,0 +1,785 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,sans-serif;font-size:12px;background:#f0f2f5;color:#1a2233}
+.shell{display:flex;height:700px;overflow:hidden}
+.sidenav{width:44px;background:#141c28;display:flex;flex-direction:column;align-items:center;flex-shrink:0;border-right:1px solid #0d1520}
+.sn-logo{width:44px;height:40px;background:#1a56db;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.sn-ico{width:44px;height:44px;display:flex;flex-direction:column;align-items:center;justify-content:center;cursor:pointer;color:rgba(255,255,255,0.38);gap:2px;border-left:3px solid transparent;transition:all 0.12s}
+.sn-ico:hover{color:rgba(255,255,255,0.75);background:rgba(255,255,255,0.05)}
+.sn-ico.active{color:#7eb6ff;border-left-color:#1a56db;background:rgba(26,86,219,0.15)}
+.sn-ico svg{width:15px;height:15px}
+.sn-ico span{font-size:8px;text-align:center}
+.sn-div{width:28px;height:1px;background:rgba(255,255,255,0.08);margin:2px 0}
+.main{flex:1;display:flex;flex-direction:column;min-width:0;overflow:hidden}
+.topbar{background:#141c28;border-bottom:1px solid #0d1520;padding:0 12px;height:36px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.tb-title{font-size:14px;font-weight:600;color:#e8ecf2;display:flex;align-items:center;gap:5px}
+.tb-search-wrap{flex:1;max-width:300px;position:relative}
+.tb-search-wrap input{width:100%;background:#0d1520;border:1px solid #2a3548;border-radius:3px;padding:4px 8px 4px 26px;font-size:11px;color:#c8d0db;outline:none}
+.tb-search-wrap input::placeholder{color:#5a6a80}
+.tb-search-wrap input:focus{border-color:#1a56db}
+.tb-sico{position:absolute;left:7px;top:50%;transform:translateY(-50%);color:#5a6a80;pointer-events:none}
+.tb-right{margin-left:auto;display:flex;align-items:center;gap:6px}
+.tb-badge{padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.tb-badge-red{background:#4d1a1a;color:#f87171;border:1px solid #7f2020}
+.tb-badge-orange{background:#3d2a10;color:#fb923c;border:1px solid #6b4010}
+.tb-badge-green{background:#0f2d1a;color:#4ade80;border:1px solid #1a5c30}
+.tb-badge-gray{background:#1a2438;color:#6a7a90;border:1px solid #2a3548}
+.tb-btn{padding:3px 9px;border:1px solid #d0d5df;border-radius:3px;font-size:11px;cursor:pointer;background:#fff;color:#374151;transition:all 0.12s;white-space:nowrap;display:inline-flex;align-items:center;gap:4px}
+.tb-btn:hover{background:#f3f4f6}
+.tb-btn-blue{background:#1a56db;color:#fff;border-color:#1a56db}
+.tb-btn-blue:hover{background:#1648c0}
+.tb-btn-sm{padding:2px 7px;font-size:10px}
+.tb-btn-dark{background:#1e2d42;color:#c8d0db;border-color:#2a3548}
+.tb-btn-dark:hover{background:#253650}
+
+/* ── VIEWS ── */
+.view{display:none;flex:1;flex-direction:column;overflow:hidden}
+.view.active{display:flex}
+
+/* ══ PROJECTS TABLE ══ */
+.inv-hdr{background:#fff;border-bottom:1px solid #dde1e8;padding:6px 14px;display:flex;align-items:center;gap:8px;flex-shrink:0}
+.inv-title{font-size:13px;font-weight:700;color:#1a2233}
+.sdtabs{background:#fff;border-bottom:1px solid #dde1e8;display:flex;align-items:flex-end;flex-shrink:0;overflow-x:auto;scrollbar-width:none}
+.sdtabs::-webkit-scrollbar{display:none}
+.sdtab{padding:7px 15px;font-size:11px;color:#6b7a96;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.12s;flex-shrink:0;display:flex;align-items:center;gap:6px}
+.sdtab:hover{color:#1a2233;background:#f5f7fa}
+.sdtab.active{color:#1a56db;border-bottom-color:#1a56db;background:#f0f5ff;font-weight:600}
+.sdtab .sdc{font-size:9px;padding:1px 5px;border-radius:8px;background:#eef0f5;color:#7a8aa0}
+.sdtab.active .sdc{background:#dbe8ff;color:#1a56db}
+.sdtab .sdd{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.bulk-bar{display:none;align-items:center;gap:6px;padding:5px 14px;background:#fffbeb;border-bottom:1px solid #fde68a;flex-shrink:0}
+.bulk-bar.show{display:flex}
+.bulk-lbl{font-size:11px;color:#92400e;font-weight:600;margin-right:4px}
+.table-wrap{flex:1;overflow-y:auto;overflow-x:auto;background:#fff}
+.table-wrap::-webkit-scrollbar{width:6px;height:6px}
+.table-wrap::-webkit-scrollbar-track{background:#f0f2f5}
+.table-wrap::-webkit-scrollbar-thumb{background:#c8cdd8;border-radius:3px}
+table.inv{width:100%;border-collapse:collapse;font-size:11px;min-width:1100px}
+table.inv thead{position:sticky;top:0;z-index:10}
+table.inv thead tr.col-hdrs{background:#2a3548}
+table.inv thead tr.col-hdrs th{padding:6px 8px;text-align:left;color:#a8b8cc;font-weight:700;font-size:10px;text-transform:uppercase;letter-spacing:0.5px;white-space:nowrap;cursor:pointer;border-right:1px solid #1e2c3e;border-bottom:1px solid #1a2438;user-select:none}
+table.inv thead tr.col-hdrs th:hover{color:#e8ecf2;background:#334060}
+table.inv thead tr.col-hdrs th:last-child{border-right:none}
+.sa{font-size:8px;color:#5a6a80;margin-left:2px}
+table.inv thead tr.frow{background:#f8f9fc}
+table.inv thead tr.frow td{padding:3px 4px;border-right:1px solid #e8ebf2;border-bottom:2px solid #dde1e8}
+table.inv thead tr.frow td:last-child{border-right:none}
+.cf{width:100%;background:#fff;border:1px solid #d0d5df;border-radius:2px;padding:3px 5px;font-size:10px;color:#1a2233;outline:none}
+.cf::placeholder{color:#a0aab8;font-style:italic}
+.cf:focus{border-color:#1a56db;background:#f0f5ff}
+tr.grp-hdr td{padding:5px 10px;color:#1a56db;font-weight:700;font-size:11px;background:#f0f5ff;border-top:2px solid #dde1e8;border-bottom:1px solid #c8d8f0}
+table.inv tbody tr.dr{border-bottom:1px solid #edf0f5;transition:background 0.08s}
+table.inv tbody tr.dr:hover{background:#f5f7fb}
+table.inv tbody tr.dr.sel{background:#eff6ff}
+table.inv td{padding:5px 8px;border-right:1px solid #edf0f5;white-space:nowrap;color:#374151}
+table.inv td:last-child{border-right:none}
+/* CLICKABLE CELLS */
+.cell-link{color:#1a56db;font-weight:500;cursor:pointer;text-decoration:none}
+.cell-link:hover{text-decoration:underline}
+.sentinel{height:36px;display:flex;align-items:center;justify-content:center;font-size:11px;color:#9ca3af;background:#fff;border-top:1px solid #edf0f5}
+.statusbar{background:#fff;border-top:1px solid #dde1e8;padding:4px 14px;display:flex;align-items:center;justify-content:space-between;font-size:11px;color:#6b7a96;flex-shrink:0}
+
+/* ══ INVESTIGATOR ══ */
+.bc-bar{background:#fff;border-bottom:1px solid #dde1e8;padding:5px 14px;display:flex;align-items:center;gap:5px;font-size:11px;flex-shrink:0}
+.bc-link{color:#1a56db;cursor:pointer}.bc-link:hover{text-decoration:underline}
+.bc-sep{color:#9ca3af}
+.proj-hdr{background:#fff;border-bottom:1px solid #dde1e8;padding:10px 14px;display:flex;align-items:center;gap:12px;flex-shrink:0}
+.ph-icon{width:36px;height:36px;border-radius:4px;background:#eff6ff;border:1px solid #bfdbfe;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.ph-meta{flex:1;min-width:0}
+.ph-name{font-size:15px;font-weight:700;color:#1a2233}
+.ph-sub{font-size:11px;color:#6b7a96;margin-top:2px}
+.ph-stats{display:flex;gap:20px;flex-shrink:0}
+.ps-item{text-align:center}
+.ps-val{font-size:20px;font-weight:700;line-height:1}
+.ps-lbl{font-size:10px;color:#6b7a96;margin-top:2px}
+
+/* TABS */
+.tab-bar{background:#fff;border-bottom:1px solid #dde1e8;display:flex;overflow-x:auto;flex-shrink:0;scrollbar-width:none}
+.tab-bar::-webkit-scrollbar{display:none}
+.tab{padding:8px 14px;font-size:11px;color:#6b7a96;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:all 0.12s;flex-shrink:0}
+.tab:hover{color:#1a2233;background:#f5f7fa}
+.tab.active{color:#1a56db;border-bottom-color:#1a56db;font-weight:600}
+
+/* TAB CONTENT */
+.tab-content{flex:1;overflow-y:auto;padding:14px;background:#f0f2f5}
+.tab-content::-webkit-scrollbar{width:5px}
+.tab-content::-webkit-scrollbar-thumb{background:#c8cdd8;border-radius:3px}
+.tc{display:none}
+.tc.active{display:block}
+
+/* PANELS */
+.panel{background:#fff;border:1px solid #dde1e8;border-radius:4px;margin-bottom:12px;overflow:hidden}
+.ph2{padding:7px 12px;border-bottom:1px solid #edf0f5;display:flex;align-items:center;justify-content:space-between;background:#f8f9fc}
+.ph2-t{font-size:11px;font-weight:700;color:#4b5563;text-transform:uppercase;letter-spacing:0.5px}
+.pb{padding:12px}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:12px}
+.three-col{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-bottom:12px}
+.kv{display:flex;align-items:center;padding:4px 0;border-bottom:1px solid #f3f4f6;font-size:11px}
+.kv:last-child{border-bottom:none}
+.kk{color:#6b7a96;width:160px;flex-shrink:0}
+.kval{color:#1a2233;flex:1}
+.metric-card{background:#fff;border:1px solid #dde1e8;border-radius:4px;padding:12px;text-align:center}
+.mc-val{font-size:26px;font-weight:700;line-height:1}
+.mc-lbl{font-size:10px;color:#6b7a96;margin-top:3px}
+.bar-row{display:flex;align-items:center;gap:8px;margin-bottom:7px}
+.bl{width:150px;font-size:11px;color:#4b5563;flex-shrink:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.bt{flex:1;height:10px;background:#f3f4f6;border-radius:2px;overflow:hidden}
+.bf{height:100%}
+.bv{font-size:11px;width:44px;text-align:right;flex-shrink:0}
+.ev-row{display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #f3f4f6;font-size:11px}
+.ev-row:last-child{border-bottom:none}
+.ev-time{color:#9ca3af;width:88px;flex-shrink:0}
+.ev-agent{color:#1a56db;width:88px;flex-shrink:0;font-weight:600}
+.ev-body{color:#4b5563;flex:1;line-height:1.5}
+.tl-wrap{padding-left:18px;border-left:2px solid #dde1e8;margin-left:5px}
+.tl-item{position:relative;margin-bottom:11px}
+.tl-item:before{content:'';position:absolute;left:-23px;top:3px;width:8px;height:8px;border-radius:50%;border:2px solid #d1d5db;background:#fff}
+.tl-item.done:before{background:#1a56db;border-color:#1a56db}
+.tl-item.now:before{background:#16a34a;border-color:#16a34a}
+.tl-lbl{font-size:11px;font-weight:600;color:#1a2233}
+.tl-sub{font-size:10px;color:#6b7a96;margin-top:1px}
+.agent-row{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f3f4f6}
+.agent-row:last-child{border-bottom:none}
+.agent-num{width:22px;height:22px;border-radius:50%;background:#eff6ff;color:#1a56db;font-size:9px;display:flex;align-items:center;justify-content:center;font-weight:700;flex-shrink:0;border:1px solid #bfdbfe}
+.mode-row{display:flex;gap:5px;margin-top:7px}
+.mode-opt{flex:1;padding:5px;border:1px solid #d0d5df;border-radius:3px;font-size:10px;text-align:center;cursor:pointer;color:#4b5563;background:#f9fafb;transition:all 0.12s}
+.mode-opt:hover{border-color:#1a56db;color:#1a56db}
+.mode-opt.sel{background:#eff6ff;color:#1a56db;border-color:#1a56db;font-weight:600}
+.voice-strip{background:#0f1825;border-radius:4px;padding:8px 12px;display:none;align-items:center;gap:10px;margin-bottom:12px}
+.pulse{width:8px;height:8px;border-radius:50%;background:#22c55e;animation:pp 1.3s infinite;flex-shrink:0}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:0.3}}
+.memo{background:#eff6ff;border:1px solid #bfdbfe;border-radius:4px;padding:11px 13px;font-size:12px;color:#1e40af;line-height:1.7;margin-bottom:12px}
+.memo strong{color:#1a2233}
+.anomaly-panel{background:#fff;border:1px solid #dde1e8;border-radius:4px;margin-bottom:10px;overflow:hidden}
+.ap-hdr{display:flex;align-items:center;gap:10px;padding:9px 12px;border-bottom:1px solid #f3f4f6}
+.ap-sev{width:4px;align-self:stretch;border-radius:2px;flex-shrink:0}
+.sev-c{background:#ef4444}.sev-m{background:#f97316}.sev-i{background:#6366f1}
+.ap-title{font-size:12px;font-weight:700;color:#1a2233;flex:1}
+.ap-sub{font-size:10px;color:#6b7a96;margin-top:2px}
+.ap-body{padding:8px 12px;font-size:11px;color:#4b5563;line-height:1.6}
+.ap-action{display:flex;align-items:center;gap:8px;padding:7px 12px;background:#f8f9fc;border-top:1px solid #f3f4f6}
+.ap-action-text{flex:1;font-size:11px;color:#6b7a96}
+.ap-action-text strong{color:#1a2233}
+
+/* STATUS / TAGS */
+.sp{display:inline-flex;align-items:center;padding:1px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.sp-crit{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.sp-major{background:#ffedd5;color:#9a3412;border:1px solid #fdba74}
+.sp-ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.sp-pend{background:#ede9fe;color:#5b21b6;border:1px solid #c4b5fd}
+.tag{display:inline-block;padding:1px 6px;border-radius:2px;font-size:10px;font-weight:600}
+.t-blue{background:#dbeafe;color:#1e40af}.t-teal{background:#ccfbf1;color:#0f766e}.t-yellow{background:#fef9c3;color:#854d0e}.t-green{background:#dcfce7;color:#166534}.t-gray{background:#f3f4f6;color:#4b5563}.t-orange{background:#ffedd5;color:#9a3412}
+.ap-run{background:#dcfce7;color:#166534;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600;border:1px solid #86efac}
+.ap-wait{background:#fef9c3;color:#854d0e;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.ap-idle{background:#f3f4f6;color:#4b5563;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.ap-alert{background:#fee2e2;color:#991b1b;padding:2px 7px;border-radius:2px;font-size:10px;font-weight:600;border:1px solid #fca5a5}
+.ra{display:inline-flex;align-items:center;justify-content:center;width:20px;height:20px;border-radius:2px;cursor:pointer;color:#9ca3af;transition:all 0.1s}
+.ra:hover{background:#1a56db;color:#fff}
+</style>
+
+<div class="shell">
+  <div class="sidenav">
+    <div class="sn-logo"><svg width="16" height="16" viewBox="0 0 16 16" fill="none"><path d="M2 2l12 6-12 6V2z" fill="#fff"/></svg></div>
+    <div style="padding:4px 0;width:100%;display:flex;flex-direction:column;align-items:center">
+      <div class="sn-ico"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="1" width="6" height="6" rx="1" fill="currentColor"/><rect x="9" y="1" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/><rect x="1" y="9" width="6" height="6" rx="1" fill="currentColor" opacity="0.4"/><rect x="9" y="9" width="6" height="6" rx="1" fill="currentColor"/></svg><span>Home</span></div>
+      <div class="sn-ico active" id="sn-projects" onclick="showProjects()"><svg viewBox="0 0 16 16" fill="none"><rect x="1" y="2" width="14" height="11" rx="1.5" stroke="currentColor" stroke-width="1.2"/><line x1="1" y1="6" x2="15" y2="6" stroke="currentColor" stroke-width="1"/><line x1="5" y1="2" x2="5" y2="6" stroke="currentColor" stroke-width="1"/></svg><span>Projects</span></div>
+      <div class="sn-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="5" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M2.5 13c0-3 2.5-5 5.5-5s5.5 2 5.5 5" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg><span>Agents</span></div>
+      <div class="sn-div"></div>
+      <div class="sn-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="6" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="5" x2="8" y2="8.5" stroke="currentColor" stroke-width="1.4" stroke-linecap="round"/><circle cx="8" cy="10.5" r="0.8" fill="currentColor"/></svg><span>Events</span></div>
+      <div class="sn-ico"><svg viewBox="0 0 16 16" fill="none"><path d="M1 8h3l2-4 3 8 2-5 2 3h2" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/></svg><span>Logs</span></div>
+    </div>
+    <div style="margin-top:auto;padding-bottom:8px">
+      <div class="sn-ico"><svg viewBox="0 0 16 16" fill="none"><circle cx="8" cy="8" r="2.5" stroke="currentColor" stroke-width="1.2"/><path d="M8 1v2M8 13v2M1 8h2M13 8h2" stroke="currentColor" stroke-width="1.1" stroke-linecap="round"/></svg><span>Config</span></div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="topbar">
+      <div class="tb-title"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M2 2l8 4-8 4V2z" fill="#1a56db"/></svg>Relay AI</div>
+      <div style="width:1px;height:16px;background:#1a2840;margin:0 2px"></div>
+      <div class="tb-search-wrap">
+        <svg class="tb-sico" width="11" height="11" viewBox="0 0 12 12" fill="none"><circle cx="5" cy="5" r="3.5" stroke="currentColor" stroke-width="1.2"/><line x1="8" y1="8" x2="11" y2="11" stroke="currentColor" stroke-width="1.2" stroke-linecap="round"/></svg>
+        <input id="gsearch" placeholder="Search all units, addresses, phases..." oninput="onFilter()">
+      </div>
+      <div class="tb-right">
+        <span class="tb-badge tb-badge-red" id="b-crit">— Critical</span>
+        <span class="tb-badge tb-badge-orange" id="b-maj">— Major</span>
+        <span class="tb-badge tb-badge-green" id="b-ok">— Healthy</span>
+        <span class="tb-badge tb-badge-gray" id="b-pend">— Pending</span>
+        <div style="width:1px;height:16px;background:#1a2840"></div>
+        <div style="width:26px;height:26px;border-radius:50%;background:#1a56db;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:600">AS</div>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: PROJECTS ═══ -->
+    <div class="view active" id="view-projects">
+      <div class="inv-hdr">
+        <div class="inv-title">Projects &nbsp;<span style="font-size:11px;color:#6b7a96;font-weight:400" id="hdr-count"></span></div>
+        <div style="margin-left:auto;display:flex;gap:6px;align-items:center">
+          <button class="tb-btn tb-btn-sm" id="grp-btn" onclick="toggleGroup()">
+            <svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="2" rx="1" fill="currentColor"/><rect x="1" y="4.5" width="6" height="2" rx="1" fill="currentColor" opacity="0.6"/><rect x="1" y="8" width="4" height="2" rx="1" fill="currentColor" opacity="0.3"/></svg>
+            Group by subdivision
+          </button>
+          <button class="tb-btn tb-btn-sm" onclick="clearAll()">✕ Clear filters</button>
+          <button class="tb-btn tb-btn-sm tb-btn-blue">+ Add Unit</button>
+        </div>
+      </div>
+      <div class="sdtabs" id="sdtabs"></div>
+      <div class="bulk-bar" id="bulk-bar">
+        <span class="bulk-lbl" id="bulk-lbl">0 selected</span>
+        <button class="tb-btn tb-btn-sm">Assign agent mode</button>
+        <button class="tb-btn tb-btn-sm" style="color:#991b1b;border-color:#fca5a5;background:#fee2e2">Dispatch agents</button>
+        <button class="tb-btn tb-btn-sm" onclick="clearSel()">✕ Deselect all</button>
+      </div>
+      <div class="table-wrap" id="table-wrap">
+        <table class="inv">
+          <thead>
+            <tr class="col-hdrs">
+              <th style="width:28px"><input type="checkbox" id="selall" style="accent-color:#1a56db" onchange="selectAll(this)"></th>
+              <th style="width:12px"></th>
+              <th onclick="doSort('id')" style="min-width:58px">ID<span class="sa" id="sa-id">↕</span></th>
+              <th onclick="doSort('subdiv')" style="min-width:130px">Subdivision<span class="sa" id="sa-subdiv">↕</span></th>
+              <th onclick="doSort('addr')" style="min-width:150px">Unit address<span class="sa" id="sa-addr">↕</span></th>
+              <th onclick="doSort('lot')" style="min-width:46px">Lot<span class="sa" id="sa-lot">↕</span></th>
+              <th onclick="doSort('phase')" style="min-width:90px">Phase<span class="sa" id="sa-phase">↕</span></th>
+              <th onclick="doSort('insp')" style="min-width:160px">Current inspection<span class="sa" id="sa-insp">↕</span></th>
+              <th onclick="doSort('state')" style="min-width:76px">State<span class="sa" id="sa-state">↕</span></th>
+              <th onclick="doSort('blockers')" style="min-width:58px">Blockers<span class="sa" id="sa-blockers">↕</span></th>
+              <th onclick="doSort('risk')" style="min-width:78px">Cost at risk<span class="sa" id="sa-risk">↕</span></th>
+              <th onclick="doSort('agent')" style="min-width:82px">Agent mode<span class="sa" id="sa-agent">↕</span></th>
+              <th onclick="doSort('week')" style="min-width:50px">Week<span class="sa" id="sa-week">↕</span></th>
+              <th style="min-width:36px"></th>
+            </tr>
+            <tr class="frow">
+              <td></td><td></td>
+              <td><input class="cf" id="f-id" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-subdiv" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-addr" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-lot" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-phase" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-insp" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-state" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-blockers" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-risk" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-agent" placeholder="Filter" oninput="onFilter()"></td>
+              <td><input class="cf" id="f-week" placeholder="Filter" oninput="onFilter()"></td>
+              <td></td>
+            </tr>
+          </thead>
+          <tbody id="tbody"></tbody>
+        </table>
+        <div class="sentinel" id="sentinel"></div>
+      </div>
+      <div class="statusbar">
+        <span id="status-left"></span>
+        <span>Relay AI · v0.1.0 · Last sync: Today 7:02 AM</span>
+      </div>
+    </div>
+
+    <!-- ═══ VIEW: INVESTIGATOR ═══ -->
+    <div class="view" id="view-investigator">
+      <div class="bc-bar">
+        <span class="bc-link" onclick="showProjects()">Projects</span>
+        <span class="bc-sep">›</span>
+        <span class="bc-link" id="bc-subdiv" onclick="showProjects()"></span>
+        <span class="bc-sep">›</span>
+        <span id="bc-addr" style="color:#1a2233;font-weight:500"></span>
+        <span class="bc-sep">›</span>
+        <span id="bc-tab" style="color:#6b7a96">Project Overview</span>
+        <div style="margin-left:auto;display:flex;gap:6px">
+          <button class="tb-btn tb-btn-sm tb-btn-blue" id="dispatch-btn" onclick="dialTECO()">▶ Dispatch Agent</button>
+          <button class="tb-btn tb-btn-sm" onclick="showProjects()">← Back to Projects</button>
+        </div>
+      </div>
+
+      <div class="proj-hdr">
+        <div class="ph-icon">
+          <svg width="18" height="18" viewBox="0 0 18 18" fill="none"><path d="M3 8l6-5 6 5v7a1 1 0 01-1 1H4a1 1 0 01-1-1V8z" stroke="#1a56db" stroke-width="1.3"/><rect x="6.5" y="10" width="5" height="5" rx="0.5" stroke="#1a56db" stroke-width="1.1"/></svg>
+        </div>
+        <div class="ph-meta">
+          <div class="ph-name" id="ph-name"></div>
+          <div class="ph-sub" id="ph-sub"></div>
+        </div>
+        <div class="ph-stats">
+          <div class="ps-item"><div class="ps-val" id="ph-blockers-val" style="color:#dc2626">—</div><div class="ps-lbl">Blockers</div></div>
+          <div class="ps-item"><div class="ps-val" id="ph-risk-val" style="color:#ea580c">—</div><div class="ps-lbl">At Risk</div></div>
+          <div class="ps-item"><div class="ps-val" id="ph-week-val" style="color:#6366f1">—</div><div class="ps-lbl">Week</div></div>
+          <div class="ps-item" style="margin-top:2px"><div id="ph-state-badge"></div><div class="ps-lbl" style="margin-top:4px">State</div></div>
+        </div>
+      </div>
+
+      <div class="tab-bar" id="inv-tabs">
+        <div class="tab active" onclick="switchTab('overview',this)">Project Overview</div>
+        <div class="tab" onclick="switchTab('anomaly',this)">Anomaly Detection</div>
+        <div class="tab" onclick="switchTab('agents',this)">Agents</div>
+        <div class="tab" onclick="switchTab('events',this)">Events</div>
+        <div class="tab" onclick="switchTab('logs',this)">Logs</div>
+        <div class="tab" onclick="switchTab('attributes',this)">Attributes</div>
+        <div class="tab" onclick="switchTab('stakeholders',this)">Stakeholders</div>
+        <div class="tab" onclick="switchTab('schedules',this)">Schedules</div>
+        <div class="tab" onclick="switchTab('changes',this)">Changes</div>
+        <div class="tab" onclick="switchTab('journals',this)">Journals</div>
+        <div class="tab" onclick="switchTab('notes',this)">Notes</div>
+        <div class="tab" onclick="switchTab('thresholds',this)">Thresholds</div>
+        <div class="tab" onclick="switchTab('performance',this)">Performance</div>
+      </div>
+
+      <div class="tab-content" id="tab-content">
+
+        <!-- OVERVIEW -->
+        <div class="tc active" id="tc-overview">
+          <div id="voice-strip" class="voice-strip">
+            <div class="pulse"></div>
+            <div style="flex:1;color:#fff;font-size:12px"><div style="font-weight:600">Agent 03 · Voice AI — TECO Utility / Will-Serve Dept.</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px" id="vcall-txt">Connecting...</div></div>
+            <button class="tb-btn tb-btn-sm" style="color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.08)" onclick="document.getElementById('voice-strip').style.display='none'">End call</button>
+          </div>
+          <div class="memo" id="overview-memo"></div>
+          <div class="two-col">
+            <div>
+              <div class="panel">
+                <div class="ph2"><div class="ph2-t">Unit details</div></div>
+                <div class="pb" id="detail-kv"></div>
+              </div>
+              <div class="panel">
+                <div class="ph2"><div class="ph2-t">Delay risk by thread</div></div>
+                <div class="pb" id="risk-bars"></div>
+              </div>
+            </div>
+            <div>
+              <div class="panel">
+                <div class="ph2"><div class="ph2-t">Lifecycle timeline</div><span style="font-size:10px;color:#9ca3af" id="wk-label"></span></div>
+                <div class="pb">
+                  <div class="tl-wrap" id="timeline"></div>
+                  <div style="margin-top:10px;padding-top:10px;border-top:1px solid #f3f4f6">
+                    <div style="font-size:10px;color:#6b7a96;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px">Agent mode</div>
+                    <div class="mode-row">
+                      <div class="mode-opt sel" id="mode-auto" onclick="setMode(this,'Agents act autonomously on every step.')">Auto</div>
+                      <div class="mode-opt" id="mode-gated" onclick="setMode(this,'Each action requires your approval.')">Gated</div>
+                      <div class="mode-opt" id="mode-watch" onclick="setMode(this,'Read-only — agents flag, you decide.')">Watch</div>
+                    </div>
+                    <div style="font-size:10px;color:#6b7a96;margin-top:5px" id="mode-txt">Agents act autonomously on every step.</div>
+                  </div>
+                </div>
+              </div>
+              <div class="panel">
+                <div class="ph2"><div class="ph2-t">All threads</div></div>
+                <div class="pb" style="padding:0"><table style="width:100%;border-collapse:collapse;font-size:11px" id="threads-tbl"></table></div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- ANOMALY -->
+        <div class="tc" id="tc-anomaly">
+          <div id="voice-strip2" class="voice-strip">
+            <div class="pulse"></div>
+            <div style="flex:1;color:#fff;font-size:12px"><div style="font-weight:600">Agent 03 · Voice AI — TECO Utility / Will-Serve Dept.</div><div style="font-size:11px;color:rgba(255,255,255,0.5);margin-top:1px" id="vcall-txt2">Connecting...</div></div>
+            <button class="tb-btn tb-btn-sm" style="color:#fff;border-color:rgba(255,255,255,0.2);background:rgba(255,255,255,0.08)" onclick="document.getElementById('voice-strip2').style.display='none'">End call</button>
+          </div>
+          <div id="anomaly-content"></div>
+        </div>
+
+        <!-- AGENTS -->
+        <div class="tc" id="tc-agents">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Agent fleet</div></div><div class="pb" id="agents-list"></div></div>
+          <div class="panel"><div class="ph2"><div class="ph2-t">Memory layer</div></div><div class="pb" id="memory-kv"></div></div>
+        </div>
+
+        <!-- EVENTS -->
+        <div class="tc" id="tc-events">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Events</div></div><div class="pb" id="events-list"></div></div>
+        </div>
+
+        <!-- LOGS -->
+        <div class="tc" id="tc-logs">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Activity log · all agents</div></div><div class="pb" id="logs-list"></div></div>
+        </div>
+
+        <!-- ATTRIBUTES -->
+        <div class="tc" id="tc-attributes">
+          <div class="two-col">
+            <div class="panel"><div class="ph2"><div class="ph2-t">Unit attributes</div></div><div class="pb" id="attr-kv"></div></div>
+            <div class="panel"><div class="ph2"><div class="ph2-t">Inspection checklist</div></div><div class="pb" id="insp-checklist"></div></div>
+          </div>
+        </div>
+
+        <!-- STAKEHOLDERS -->
+        <div class="tc" id="tc-stakeholders">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Stakeholders</div></div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="border-bottom:1px solid #f3f4f6;background:#f8f9fc"><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Stakeholder</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Role</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Contact</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Pref.</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Phone avg</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Email avg</th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233;font-weight:500">TECO Utility</td><td style="padding:5px 10px;color:#6b7a96">Utility</td><td style="padding:5px 10px;color:#6b7a96">D. Patel</td><td style="padding:5px 10px"><span class="tag t-green">Phone</span></td><td style="padding:5px 10px;color:#16a34a">1.4d</td><td style="padding:5px 10px;color:#dc2626">12d</td></tr>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233;font-weight:500">Pasco County Planning</td><td style="padding:5px 10px;color:#6b7a96">Agency</td><td style="padding:5px 10px;color:#6b7a96">Planner X</td><td style="padding:5px 10px"><span class="tag t-green">Phone only</span></td><td style="padding:5px 10px;color:#16a34a">2d</td><td style="padding:5px 10px;color:#dc2626">7d</td></tr>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233;font-weight:500">First National CF</td><td style="padding:5px 10px;color:#6b7a96">Lender</td><td style="padding:5px 10px;color:#6b7a96">M. Kapoor</td><td style="padding:5px 10px"><span class="tag t-gray">Email</span></td><td style="padding:5px 10px;color:#6b7a96">3d</td><td style="padding:5px 10px;color:#6b7a96">3d</td></tr>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233;font-weight:500">Rivera Civil Eng.</td><td style="padding:5px 10px;color:#6b7a96">Consultant</td><td style="padding:5px 10px;color:#6b7a96">J. Rivera</td><td style="padding:5px 10px"><span class="tag t-gray">Email</span></td><td style="padding:5px 10px;color:#6b7a96">—</td><td style="padding:5px 10px;color:#ea580c">5d</td></tr>
+                <tr><td style="padding:5px 10px;color:#1a2233;font-weight:500">Sullivan Architecture</td><td style="padding:5px 10px;color:#6b7a96">Architect</td><td style="padding:5px 10px;color:#6b7a96">T. Sullivan</td><td style="padding:5px 10px"><span class="tag t-gray">Email</span></td><td style="padding:5px 10px;color:#6b7a96">—</td><td style="padding:5px 10px;color:#16a34a">1d</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- SCHEDULES -->
+        <div class="tc" id="tc-schedules">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Agent schedules</div></div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="border-bottom:1px solid #f3f4f6;background:#f8f9fc"><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Agent</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Schedule</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Next run</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Status</th></tr></thead>
+              <tbody>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233">Agency Coordinator</td><td style="padding:5px 10px;color:#6b7a96">Daily 9:02 AM</td><td style="padding:5px 10px;color:#1a56db">Today 9:02 AM</td><td style="padding:5px 10px"><span class="ap-alert">Active</span></td></tr>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233">Stakeholder Brief</td><td style="padding:5px 10px;color:#6b7a96">Every Friday 4:00 PM</td><td style="padding:5px 10px;color:#6b7a96">Fri May 9</td><td style="padding:5px 10px"><span class="ap-run">Scheduled</span></td></tr>
+                <tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233">Intelligence Briefing</td><td style="padding:5px 10px;color:#6b7a96">Daily 7:00 AM</td><td style="padding:5px 10px;color:#6b7a96">Tomorrow 7:00 AM</td><td style="padding:5px 10px"><span class="ap-run">Scheduled</span></td></tr>
+                <tr><td style="padding:5px 10px;color:#1a2233">Lender Report</td><td style="padding:5px 10px;color:#6b7a96">One-time · May 12</td><td style="padding:5px 10px;color:#6b7a96">May 12</td><td style="padding:5px 10px"><span class="ap-idle">Queued</span></td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- CHANGES -->
+        <div class="tc" id="tc-changes">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Change log</div></div><div class="pb">
+            <div class="ev-row"><div class="ev-time">Today</div><div class="ev-agent">Agent 01</div><div class="ev-body">Traffic study response updated — revision 3.</div></div>
+            <div class="ev-row"><div class="ev-time">Yesterday</div><div class="ev-agent">Ahmad Sous</div><div class="ev-body">Agent mode changed: Approval Gated → Autonomous.</div></div>
+            <div class="ev-row"><div class="ev-time">Apr 28</div><div class="ev-agent">Agent 05</div><div class="ev-body">Stakeholder list updated — added J. Rivera (civil eng).</div></div>
+            <div class="ev-row"><div class="ev-time">Apr 25</div><div class="ev-agent">Ahmad Sous</div><div class="ev-body">Lender contact updated to First National Construction Finance.</div></div>
+          </div></div>
+        </div>
+
+        <!-- JOURNALS -->
+        <div class="tc" id="tc-journals">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Developer journals</div><button class="tb-btn tb-btn-sm tb-btn-blue">+ Add entry</button></div><div class="pb">
+            <div class="ev-row"><div class="ev-time">Apr 29</div><div class="ev-agent">Ahmad</div><div class="ev-body">Called TECO myself — got voicemail again. Relay AI Voice AI dispatch queued for 9 AM tomorrow.</div></div>
+            <div class="ev-row"><div class="ev-time">Apr 22</div><div class="ev-agent">Ahmad</div><div class="ev-body">Meeting with Pasco County — planning dept confirmed hearing schedule for May cycle.</div></div>
+            <div class="ev-row"><div class="ev-time">Apr 15</div><div class="ev-agent">Ahmad</div><div class="ev-body">Lender confirmed draw is ready pending will-serve. This is the critical path item.</div></div>
+          </div></div>
+        </div>
+
+        <!-- NOTES -->
+        <div class="tc" id="tc-notes">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Notes</div><button class="tb-btn tb-btn-sm tb-btn-blue">+ Add note</button></div><div class="pb">
+            <div class="ev-row"><div class="ev-time">Apr 30</div><div class="ev-agent">Ahmad</div><div class="ev-body">Suffolk Tech intro call went well. Mack wants to see Voice AI live. Demo May 5.</div></div>
+            <div class="ev-row"><div class="ev-time">Apr 22</div><div class="ev-agent">Ahmad</div><div class="ev-body">Pasco planning confirmed May hearing window. Need all docs by Thursday.</div></div>
+          </div></div>
+        </div>
+
+        <!-- THRESHOLDS -->
+        <div class="tc" id="tc-thresholds">
+          <div class="panel"><div class="ph2"><div class="ph2-t">Alert thresholds</div></div>
+            <table style="width:100%;border-collapse:collapse;font-size:11px">
+              <thead><tr style="border-bottom:1px solid #f3f4f6;background:#f8f9fc"><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Metric</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Warning</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Critical</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Current</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">State</th></tr></thead>
+              <tbody id="threshold-body"></tbody>
+            </table>
+          </div>
+        </div>
+
+        <!-- PERFORMANCE -->
+        <div class="tc" id="tc-performance">
+          <div class="three-col" id="perf-cards"></div>
+          <div class="panel"><div class="ph2"><div class="ph2-t">Agent performance · last 30 days</div></div><div class="pb" id="perf-bars"></div></div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+const SUBDIVS=[{name:'Lakewood Commons',city:'Tampa, FL',n:42},{name:'Pasco Ridge Ph.2',city:'Wesley Chapel, FL',n:58},{name:'Hillsborough 84',city:'Tampa, FL',n:84},{name:'Riverview Estates',city:'Riverview, FL',n:36}];
+const PHASES_W=['Entitlement','Entitlement','Permitting','Permitting','Inspections','Inspections','Inspections','Inspections'];
+const INSPS={Entitlement:['—'],Permitting:['Building permit review','Zoning review','Fire plan review','Utility coordination','Site plan review'],Inspections:['Foundation inspection','Framing inspection','Rough electrical','Rough plumbing','HVAC rough-in','Insulation inspection','Drywall / sheathing','Final inspection']};
+const STATES_W=['Critical','Critical','Major','Major','Major','Healthy','Healthy','Healthy','Healthy','Pending'];
+const AGENTS=['Autonomous','Autonomous','Gated','Observer'];
+const STREETS={'Lakewood Commons':['Lakewood Blvd','Maple Creek Ln','Cypress Cove Dr','Lakeview Pl'],'Pasco Ridge Ph.2':['Ridgecrest Dr','Hillside Rd','Pinecrest Ave','Pasco Ridge Ct'],'Hillsborough 84':['Hillview Ct','Riverside Blvd','Oak Hollow Way','Hillsborough Ave'],'Riverview Estates':['Estates Dr','Magnolia Run','Sunridge Ct','Riverview Ln']};
+function pick(a){return a[Math.floor(Math.random()*a.length)]}
+
+let ALL=[],filtered=[],rendered=0;
+const CHUNK=40;
+let sortKey='',sortDir='asc',groupMode=false,activeSub='All';
+let selected=new Set();
+let currentUnit=null;
+
+(()=>{let id=1;SUBDIVS.forEach(sd=>{const st=STREETS[sd.name];for(let i=1;i<=sd.n;i++){const phase=pick(PHASES_W);const insp=pick(INSPS[phase]);const state=pick(STATES_W);const blockers=state==='Critical'?Math.floor(Math.random()*3)+1:state==='Major'?Math.floor(Math.random()*2):0;const risk=blockers>0?Math.round(blockers*60+Math.random()*180):0;const wk=phase==='Entitlement'?Math.floor(Math.random()*18)+1:phase==='Permitting'?Math.floor(Math.random()*14)+18:Math.floor(Math.random()*14)+32;ALL.push({id:'PRJ-'+String(id).padStart(3,'0'),subdiv:sd.name,city:sd.city,addr:(100+i*4)+' '+pick(st),lot:i,phase,insp,state,blockers,risk,agent:pick(AGENTS),week:wk});id++;}});})();
+
+/* ── NAVIGATION ── */
+function showProjects(){
+  document.getElementById('view-projects').classList.add('active');
+  document.getElementById('view-investigator').classList.remove('active');
+}
+function openUnit(id){
+  const unit=ALL.find(d=>d.id===id);
+  if(!unit)return;
+  currentUnit=unit;
+  populateInvestigator(unit);
+  document.getElementById('view-projects').classList.remove('active');
+  document.getElementById('view-investigator').classList.add('active');
+  // reset to overview tab
+  switchTab('overview',document.querySelector('#inv-tabs .tab'));
+  document.getElementById('tab-content').scrollTop=0;
+}
+
+/* ── POPULATE INVESTIGATOR ── */
+function populateInvestigator(u){
+  // breadcrumb
+  document.getElementById('bc-subdiv').textContent=u.subdiv;
+  document.getElementById('bc-addr').textContent=u.addr+' · Lot '+u.lot;
+  // header
+  document.getElementById('ph-name').textContent=u.addr+' — Lot '+u.lot;
+  document.getElementById('ph-sub').textContent=u.subdiv+' · '+u.city+' · '+u.phase+' Phase · '+u.id+' · '+u.agent+' mode';
+  document.getElementById('ph-blockers-val').textContent=u.blockers||'0';
+  document.getElementById('ph-blockers-val').style.color=u.blockers>0?'#dc2626':'#16a34a';
+  document.getElementById('ph-risk-val').textContent=u.risk?'$'+u.risk+'K':'—';
+  document.getElementById('ph-risk-val').style.color=u.risk>0?'#ea580c':'#16a34a';
+  document.getElementById('ph-week-val').textContent='Wk '+u.week;
+  const sm={Critical:'sp-crit',Major:'sp-major',Healthy:'sp-ok',Pending:'sp-pend'};
+  document.getElementById('ph-state-badge').innerHTML=`<span class="sp ${sm[u.state]||'sp-pend'}">${u.state}</span>`;
+  // dispatch btn label
+  const hasCrit=u.state==='Critical'||u.blockers>0;
+  document.getElementById('dispatch-btn').style.display=hasCrit?'inline-flex':'none';
+  // OVERVIEW memo
+  document.getElementById('overview-memo').innerHTML=u.blockers>0
+    ?`<strong>Intelligence · 7:02 AM —</strong> ${u.blockers} blocker${u.blockers>1?'s':''} detected on ${u.addr}. ${u.state==='Critical'?'Critical: TECO will-serve silent 42 days — Voice AI call recommended as highest-value action ($'+u.risk+'K at risk).':u.blockers>0?'Major blocker on '+u.insp+' — agent action queued.':''} Planning hearing deadline approaching.`
+    :`<strong>Intelligence · 7:02 AM —</strong> No active blockers on ${u.addr}. Unit is ${u.state.toLowerCase()} — currently in ${u.phase} phase${u.insp&&u.insp!=='—'?' ('+u.insp+')':''}.`;
+  // unit details kv
+  const phm={Entitlement:'t-blue',Permitting:'t-teal',Inspections:'t-yellow'};
+  const sm2={Critical:'sp-crit',Major:'sp-major',Healthy:'sp-ok',Pending:'sp-pend'};
+  document.getElementById('detail-kv').innerHTML=`
+    <div class="kv"><div class="kk">Project ID</div><div class="kval" style="color:#1a56db">${u.id}</div></div>
+    <div class="kv"><div class="kk">Unit address</div><div class="kval">${u.addr}</div></div>
+    <div class="kv"><div class="kk">Lot #</div><div class="kval">Lot ${u.lot}</div></div>
+    <div class="kv"><div class="kk">Subdivision</div><div class="kval">${u.subdiv}</div></div>
+    <div class="kv"><div class="kk">Location</div><div class="kval">${u.city}</div></div>
+    <div class="kv"><div class="kk">Phase</div><div class="kval"><span class="tag ${phm[u.phase]||'t-gray'}">${u.phase}</span></div></div>
+    <div class="kv"><div class="kk">Current inspection</div><div class="kval">${u.insp&&u.insp!=='—'?u.insp:'<span style="color:#c0c8d8;font-style:italic">— pre-permit</span>'}</div></div>
+    <div class="kv"><div class="kk">State</div><div class="kval"><span class="sp ${sm2[u.state]}">${u.state}</span></div></div>
+    <div class="kv"><div class="kk">Agent mode</div><div class="kval">${u.agent}</div></div>
+    <div class="kv"><div class="kk">Project week</div><div class="kval">${u.week} of 48</div></div>`;
+  // set mode buttons
+  ['auto','gated','watch'].forEach(m=>{document.getElementById('mode-'+m).classList.remove('sel');});
+  if(u.agent==='Autonomous')document.getElementById('mode-auto').classList.add('sel');
+  else if(u.agent==='Gated')document.getElementById('mode-gated').classList.add('sel');
+  else document.getElementById('mode-watch').classList.add('sel');
+  // risk bars
+  const bars=u.blockers>0?[
+    {label:'TECO will-serve',days:u.risk>200?18:u.risk>100?11:4,color:'#ef4444'},
+    {label:'Planning hearing',days:u.risk>150?11:5,color:'#f97316'},
+    {label:'Lender report',days:4,color:'#6366f1'},
+    {label:'Env. review',days:0,color:'#22c55e'}
+  ]:[
+    {label:'No active blockers',days:0,color:'#22c55e'},
+    {label:'Lender report',days:2,color:'#6366f1'},
+    {label:'Env. review',days:0,color:'#22c55e'}
+  ];
+  document.getElementById('risk-bars').innerHTML=bars.map(b=>`<div class="bar-row"><div class="bl">${b.label}</div><div class="bt"><div class="bf" style="width:${b.days?Math.min(b.days*5,95):3}%;background:${b.color}"></div></div><div class="bv" style="color:${b.color}">${b.days?b.days+'d':'0d'}</div></div>`).join('');
+  // timeline
+  document.getElementById('wk-label').textContent='Wk '+u.week+' of 48';
+  const phases=[
+    {label:'Concept & site control',sub:'Complete · Wk 1–4',cls:'done'},
+    {label:'Entitlement',sub:'Wk 8–24',cls:u.phase==='Entitlement'?'now':u.week>24?'done':''},
+    {label:'Permitting',sub:'Wk 24–36 · Building permit, fire, zoning',cls:u.phase==='Permitting'?'now':u.week>36?'done':''},
+    {label:'Inspections',sub:'Wk 36–44 · Foundation → framing → electrical → plumbing → HVAC → final',cls:u.phase==='Inspections'?'now':u.week>44?'done':''},
+    {label:'Certificate of Occupancy',sub:'Target Wk 48',cls:u.week>=48?'done':''}
+  ];
+  document.getElementById('timeline').innerHTML=phases.map(p=>`<div class="tl-item ${p.cls}"><div class="tl-lbl" style="${p.cls==='now'?'color:#16a34a':''}">${p.label}${p.cls==='now'?' ← current':''}</div><div class="tl-sub">${p.sub}</div></div>`).join('');
+  // threads table
+  const threads=u.blockers>0?[
+    {name:'TECO will-serve letter',stakeholder:'Utility',status:'Blocked',cls:'sp-crit',risk:u.risk>200?'18d':'11d',last:'Email · 42d ago',nameColor:'#dc2626'},
+    {name:'Planning hearing',stakeholder:'Pasco County',status:'Waiting',cls:'sp-warn',risk:'11d',last:'Draft queued · 2h ago',nameColor:'#ea580c'},
+    {name:'Environmental review',stakeholder:'Hillsborough Env.',status:'Active',cls:'sp-ok',risk:'0d',last:'Call · Mon 9:02 AM',nameColor:'#374151'},
+    {name:'Architect milestone 3',stakeholder:'Architect',status:'Active',cls:'sp-ok',risk:'0d',last:'Review call · Thu',nameColor:'#374151'},
+    {name:'Lender Q2 report',stakeholder:'Lender',status:'Scheduled',cls:'sp-pend',risk:'4d',last:'Auto-draft · May 12',nameColor:'#374151'}
+  ]:[
+    {name:'Environmental review',stakeholder:'Env. Agency',status:'Active',cls:'sp-ok',risk:'0d',last:'On schedule',nameColor:'#374151'},
+    {name:u.insp||'Current inspection',stakeholder:'City inspector',status:'Active',cls:'sp-ok',risk:'0d',last:'Scheduled',nameColor:'#374151'},
+    {name:'Lender Q2 report',stakeholder:'Lender',status:'Scheduled',cls:'sp-pend',risk:'2d',last:'Auto-draft · May 12',nameColor:'#374151'}
+  ];
+  document.getElementById('threads-tbl').innerHTML=`<thead><tr style="border-bottom:1px solid #f3f4f6;background:#f8f9fc"><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Thread</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Stakeholder</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Status</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Risk</th><th style="padding:5px 10px;text-align:left;color:#6b7a96;font-size:10px;text-transform:uppercase">Last action</th></tr></thead><tbody>`+threads.map(t=>`<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:${t.nameColor};font-weight:600">${t.name}</td><td style="padding:5px 10px;color:#6b7a96">${t.stakeholder}</td><td style="padding:5px 10px"><span class="sp ${t.cls}">${t.status}</span></td><td style="padding:5px 10px;color:#6b7a96">${t.risk}</td><td style="padding:5px 10px;color:#9ca3af">${t.last}</td></tr>`).join('')+'</tbody>';
+  // anomaly
+  document.getElementById('anomaly-content').innerHTML=u.blockers>0?`
+    <div class="anomaly-panel"><div class="ap-hdr"><div class="ap-sev sev-c"></div><div style="flex:1"><div class="ap-title">TECO will-serve · 42-day silence <span class="tag" style="background:#fee2e2;color:#991b1b;margin-left:6px">Critical</span></div><div class="ap-sub">${u.addr} · Utility thread · Lender draw blocked · $${u.risk}K at risk</div></div><button class="tb-btn tb-btn-sm tb-btn-blue" onclick="dialTECO()">▶ Dispatch Voice AI</button></div><div class="ap-body">TECO has not responded to 3 email requests over 42 days. Memory: phone avg 1.4 days vs email 12 days. Voice AI is highest-value action.</div><div class="ap-action"><div class="ap-action-text"><strong>Agent 03:</strong> Voice AI dials TECO Will-Serve at 9:02 AM — confirms queue, logs reviewer + ETA.</div></div></div>
+    <div class="anomaly-panel"><div class="ap-hdr"><div class="ap-sev sev-m"></div><div style="flex:1"><div class="ap-title">Planning hearing · deadline 71 hours <span class="tag" style="background:#ffedd5;color:#9a3412;margin-left:6px">Major</span></div><div class="ap-sub">Pasco County Planning · Civil eng sign-off pending</div></div><button class="tb-btn tb-btn-sm" style="background:#16a34a;color:#fff;border-color:#16a34a" onclick="this.textContent='Sent ✓';this.disabled=true">Approve & send</button></div><div class="ap-body">Packet due Thursday EOD. Agent 01 draft ready — J. Rivera has not signed off. 18-day slip if missed.</div><div class="ap-action"><div class="ap-action-text"><strong>Agent 01:</strong> Escalation email to J. Rivera with draft + Thursday EOD deadline.</div></div></div>`
+    :`<div style="text-align:center;padding:48px;color:#9ca3af;font-size:13px">No active anomalies detected for ${u.addr}.<br><span style="font-size:11px;margin-top:6px;display:block">All threads are healthy or on schedule.</span></div>`;
+  // agents
+  document.getElementById('agents-list').innerHTML=[
+    {n:'01',name:'Entitlement',desc:u.phase==='Entitlement'?'Draft ready · waiting civil eng sign-off':'Not active — unit past entitlement phase',st:u.phase==='Entitlement'?'ap-wait':'ap-idle',stl:u.phase==='Entitlement'?'Waiting':'Idle'},
+    {n:'02',name:'Permit',desc:u.phase==='Permitting'?'Monitoring city portal — '+u.insp:'Not active — unit not yet in permitting',st:u.phase==='Permitting'?'ap-run':'ap-idle',stl:u.phase==='Permitting'?'Watching':'Idle'},
+    {n:'03',name:'Agency Coordinator',desc:u.blockers>0?'TECO silent 42 days — Voice AI dispatch queued 9:02 AM':'No silent threads — monitoring',st:u.blockers>0?'ap-alert':'ap-run',stl:u.blockers>0?'Dispatching':'Running'},
+    {n:'04',name:'Inspector',desc:u.phase==='Inspections'?'Tracking '+u.insp+' · auto-scheduling next step':'Idle — unit not in inspection phase',st:u.phase==='Inspections'?'ap-run':'ap-idle',stl:u.phase==='Inspections'?'Running':'Idle'},
+    {n:'05',name:'Stakeholder Brief',desc:'Auto-drafting weekly status memo · next: Friday 4PM',st:'ap-run',stl:'Running'},
+    {n:'06',name:'Cert. of Occupancy',desc:u.week>=44?'Tracking CO punchlist':'Inactive — unit not yet in final phase',st:u.week>=44?'ap-run':'ap-idle',stl:u.week>=44?'Running':'Idle'}
+  ].map(a=>`<div class="agent-row"><div class="agent-num">${a.n}</div><div style="flex:1"><div style="font-size:11px;font-weight:600;color:#1a2233">${a.name}</div><div style="font-size:10px;color:#6b7a96;margin-top:1px">${a.desc}</div></div><span class="${a.st}">${a.stl}</span></div>`).join('');
+  document.getElementById('memory-kv').innerHTML=`
+    <div class="kv"><div class="kk">TECO response pattern</div><div class="kval">Phone: 1.4 days avg · Email: 12 days avg</div></div>
+    <div class="kv"><div class="kk">Pasco agenda cycle</div><div class="kval">Posts Fridays · deadline Thursday EOD</div></div>
+    <div class="kv"><div class="kk">Pasco Fire review</div><div class="kval">6 days avg (vs Hillsborough: 2 days)</div></div>
+    <div class="kv"><div class="kk">Lender draw gate</div><div class="kval">Will-serve + Phase I env required</div></div>`;
+  // events & logs
+  const evts=`
+    <div class="ev-row"><div class="ev-time">7:02 AM</div><div class="ev-agent">Intelligence</div><div class="ev-body">Morning briefing for ${u.addr}. ${u.blockers} blocker${u.blockers!==1?'s':''} detected. State: ${u.state}.</div></div>
+    <div class="ev-row"><div class="ev-time">6:55 AM</div><div class="ev-agent">Agent 03</div><div class="ev-body">${u.blockers>0?'TECO silence threshold exceeded. Voice AI dispatch queued 9:02 AM.':'No silent threads detected. All stakeholders responsive.'}</div></div>
+    <div class="ev-row"><div class="ev-time">Yest 4:00 PM</div><div class="ev-agent">Agent 05</div><div class="ev-body">Weekly memo delivered to all stakeholders. 0 manual input.</div></div>
+    <div class="ev-row"><div class="ev-time">Mon 9:02 AM</div><div class="ev-agent">Agent 03</div><div class="ev-body">Called Hillsborough Env. Phase II confirmed. Reviewer: Sarah M. ETA 3 weeks.</div></div>`;
+  document.getElementById('events-list').innerHTML=evts;
+  document.getElementById('logs-list').innerHTML=evts;
+  // attributes
+  document.getElementById('attr-kv').innerHTML=`
+    <div class="kv"><div class="kk">Unit type</div><div class="kval">Single family · 2-story</div></div>
+    <div class="kv"><div class="kk">Sq footage (planned)</div><div class="kval">2,240 sq ft</div></div>
+    <div class="kv"><div class="kk">Bedrooms / baths</div><div class="kval">4 bed / 2.5 bath</div></div>
+    <div class="kv"><div class="kk">Lot size</div><div class="kval">0.21 acres</div></div>
+    <div class="kv"><div class="kk">Construction type</div><div class="kval">Wood-frame · 2-story</div></div>
+    <div class="kv"><div class="kk">Zoning</div><div class="kval">R-1 Single family</div></div>
+    <div class="kv"><div class="kk">HOA</div><div class="kval">Yes · PML Group</div></div>
+    <div class="kv"><div class="kk">Flood zone</div><div class="kval">Zone X · No special hazard</div></div>`;
+  const allInsps=['Foundation inspection','Framing inspection','Rough electrical','Rough plumbing','HVAC rough-in','Insulation inspection','Drywall / sheathing','Final inspection'];
+  const curIdx=allInsps.indexOf(u.insp);
+  document.getElementById('insp-checklist').innerHTML=allInsps.map((ins,i)=>{
+    const done=i<curIdx;const current=i===curIdx;
+    const ic=done?'#16a34a':current?'#ea580c':'#9ca3af';
+    const lbl=done?'✓ Complete':current?'← In progress':'Pending';
+    return`<div class="kv"><div class="kk">${ins}</div><div class="kval" style="color:${ic};font-weight:${current?600:400}">${lbl}</div></div>`;
+  }).join('');
+  // thresholds
+  document.getElementById('threshold-body').innerHTML=[
+    {metric:'Agency silence (days)',warn:14,crit:30,cur:u.blockers>0?42:3,state:u.blockers>0?'Critical':'Healthy'},
+    {metric:'Deadline proximity (hrs)',warn:120,crit:48,cur:u.blockers>0?71:200,state:u.blockers>0?'Major':'Healthy'},
+    {metric:'Cost at risk ($K)',warn:100,crit:300,cur:u.risk,state:u.risk>300?'Critical':u.risk>100?'Major':'Healthy'},
+    {metric:'Thread delay (days)',warn:7,crit:14,cur:u.blockers>0?18:0,state:u.blockers>0?'Critical':'Healthy'}
+  ].map(t=>{
+    const sm3={Critical:'sp-crit',Major:'sp-major',Healthy:'sp-ok'};
+    const cc=t.state==='Critical'?'#dc2626':t.state==='Major'?'#ea580c':'#16a34a';
+    return`<tr style="border-bottom:1px solid #f3f4f6"><td style="padding:5px 10px;color:#1a2233">${t.metric}</td><td style="padding:5px 10px;color:#ca8a04">${t.warn}</td><td style="padding:5px 10px;color:#dc2626">${t.crit}</td><td style="padding:5px 10px;color:${cc};font-weight:700">${t.cur}</td><td style="padding:5px 10px"><span class="sp ${sm3[t.state]||'sp-ok'}">${t.state}</span></td></tr>`;
+  }).join('');
+  // performance
+  document.getElementById('perf-cards').innerHTML=[
+    {val:u.blockers>0?'76%':'94%',lbl:'Thread resolution rate',sub:'Last 90 days',color:u.blockers>0?'#ea580c':'#16a34a'},
+    {val:'1.4d',lbl:'Avg agency response',sub:'Phone channel',color:'#1a56db'},
+    {val:'Wk '+u.week,lbl:'Current week',sub:'of 48 projected',color:'#6366f1'}
+  ].map(c=>`<div class="metric-card"><div class="mc-val" style="color:${c.color}">${c.val}</div><div class="mc-lbl">${c.lbl}</div><div style="font-size:10px;color:#9ca3af;margin-top:2px">${c.sub}</div></div>`).join('');
+  document.getElementById('perf-bars').innerHTML=[
+    {lbl:'Agency Coordinator',pct:92,color:'#1a56db'},
+    {lbl:'Stakeholder Brief',pct:100,color:'#16a34a'},
+    {lbl:'Entitlement',pct:u.phase==='Entitlement'?70:100,color:'#ca8a04'},
+    {lbl:'Inspector',pct:u.phase==='Inspections'?85:45,color:'#6366f1'}
+  ].map(b=>`<div class="bar-row"><div class="bl">${b.lbl}</div><div class="bt"><div class="bf" style="width:${b.pct}%;background:${b.color}"></div></div><div class="bv" style="color:${b.color}">${b.pct}%</div></div>`).join('');
+}
+
+function switchTab(name,el){
+  document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+  document.querySelectorAll('.tc').forEach(p=>p.classList.remove('active'));
+  if(el)el.classList.add('active');
+  const p=document.getElementById('tc-'+name);if(p)p.classList.add('active');
+  document.getElementById('bc-tab').textContent=el?el.textContent:name;
+  document.getElementById('tab-content').scrollTop=0;
+}
+
+function setMode(btn,txt){
+  document.querySelectorAll('.mode-opt').forEach(b=>b.classList.remove('sel'));
+  btn.classList.add('sel');
+  document.getElementById('mode-txt').textContent=txt;
+}
+
+/* ── PROJECTS TABLE ── */
+function buildTabs(){
+  let h=`<div class="sdtab ${activeSub==='All'?'active':''}" onclick="setSub('All')">All projects<span class="sdc">${ALL.length}</span></div>`;
+  SUBDIVS.forEach(sd=>{const rows=ALL.filter(d=>d.subdiv===sd.name);const crit=rows.filter(d=>d.state==='Critical').length;const maj=rows.filter(d=>d.state==='Major').length;const dc=crit>0?'#ef4444':maj>0?'#f97316':'#22c55e';h+=`<div class="sdtab ${activeSub===sd.name?'active':''}" onclick="setSub('${sd.name}')"><span class="sdd" style="background:${dc}"></span>${sd.name}<span class="sdc">${rows.length}</span></div>`;});
+  document.getElementById('sdtabs').innerHTML=h;
+}
+function setSub(n){activeSub=n;buildTabs();onFilter();}
+function onFilter(){
+  const g=(document.getElementById('gsearch').value||'').toLowerCase();
+  const fv=id=>(document.getElementById(id).value||'').toLowerCase();
+  const fi=fv('f-id'),fs=fv('f-subdiv'),fa=fv('f-addr'),fl=fv('f-lot'),fp=fv('f-phase'),fn=fv('f-insp'),fst=fv('f-state'),fb=fv('f-blockers'),fr=fv('f-risk'),fag=fv('f-agent'),fw=fv('f-week');
+  filtered=ALL.filter(d=>{
+    if(activeSub!=='All'&&d.subdiv!==activeSub)return false;
+    if(g&&!Object.values(d).join(' ').toLowerCase().includes(g))return false;
+    if(fi&&!d.id.toLowerCase().includes(fi))return false;
+    if(fs&&!d.subdiv.toLowerCase().includes(fs))return false;
+    if(fa&&!d.addr.toLowerCase().includes(fa))return false;
+    if(fl&&!String(d.lot).includes(fl))return false;
+    if(fp&&!d.phase.toLowerCase().includes(fp))return false;
+    if(fn&&!d.insp.toLowerCase().includes(fn))return false;
+    if(fst&&!d.state.toLowerCase().includes(fst))return false;
+    if(fb&&!String(d.blockers).includes(fb))return false;
+    if(fr&&!String(d.risk).includes(fr))return false;
+    if(fag&&!d.agent.toLowerCase().includes(fag))return false;
+    if(fw&&!String(d.week).includes(fw))return false;
+    return true;
+  });
+  if(sortKey)applySort();
+  updateBadges();resetAndRender();
+}
+function applySort(){filtered.sort((a,b)=>{let av=a[sortKey],bv=b[sortKey];if(typeof av==='number')return sortDir==='asc'?av-bv:bv-av;return sortDir==='asc'?String(av).localeCompare(String(bv)):String(bv).localeCompare(String(av));});}
+function updateBadges(){
+  document.getElementById('b-crit').textContent=filtered.filter(d=>d.state==='Critical').length+' Critical';
+  document.getElementById('b-maj').textContent=filtered.filter(d=>d.state==='Major').length+' Major';
+  document.getElementById('b-ok').textContent=filtered.filter(d=>d.state==='Healthy').length+' Healthy';
+  document.getElementById('b-pend').textContent=filtered.filter(d=>d.state==='Pending').length+' Pending';
+  document.getElementById('hdr-count').textContent='| '+filtered.length+' of '+ALL.length+' units · '+SUBDIVS.length+' subdivisions';
+}
+function resetAndRender(){rendered=0;document.getElementById('tbody').innerHTML='';document.getElementById('table-wrap').scrollTop=0;appendChunk();}
+function appendChunk(){
+  const tbody=document.getElementById('tbody');
+  const end=Math.min(rendered+CHUNK,filtered.length);
+  const slice=filtered.slice(rendered,end);
+  if(groupMode&&activeSub==='All'){
+    let lastSub='';
+    slice.forEach(d=>{
+      if(d.subdiv!==lastSub){lastSub=d.subdiv;const already=Array.from(tbody.querySelectorAll('tr.grp-hdr')).some(r=>r.dataset.subdiv===d.subdiv);if(!already){const sr=filtered.filter(r=>r.subdiv===d.subdiv);const crit=sr.filter(r=>r.state==='Critical').length;const maj=sr.filter(r=>r.state==='Major').length;const dc=crit>0?'#ef4444':maj>0?'#f97316':'#22c55e';const tr=document.createElement('tr');tr.className='grp-hdr';tr.dataset.subdiv=d.subdiv;tr.innerHTML=`<td colspan="14"><span style="display:inline-flex;align-items:center;gap:8px"><svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="4" fill="${dc}"/></svg>${d.subdiv}<span style="font-size:10px;color:#6b7a96;font-weight:400">${sr.length} units · ${crit} critical · ${maj} major</span></span></td>`;tbody.appendChild(tr);}}
+      tbody.appendChild(makeRow(d));
+    });
+  } else {
+    const frag=document.createDocumentFragment();slice.forEach(d=>frag.appendChild(makeRow(d)));tbody.appendChild(frag);
+  }
+  rendered=end;
+  const sent=document.getElementById('sentinel');
+  sent.textContent=rendered>=filtered.length?(filtered.length>0?'— all '+filtered.length+' units loaded —':'No units match current filters.'):'';
+  document.getElementById('status-left').textContent=`Showing ${rendered} of ${filtered.length} units · ${selected.size} selected`;
+}
+function makeRow(d){
+  const tr=document.createElement('tr');
+  tr.className='dr'+(selected.has(d.id)?' sel':'');
+  const dc={Critical:'#ef4444',Major:'#f97316',Healthy:'#22c55e',Pending:'#818cf8'}[d.state]||'#888';
+  const sm={Critical:'sp-crit',Major:'sp-major',Healthy:'sp-ok',Pending:'sp-pend'};
+  const pm={Entitlement:'t-blue',Permitting:'t-teal',Inspections:'t-yellow'};
+  const bc=d.blockers>0?d.state==='Critical'?'#dc2626':'#ea580c':'#16a34a';
+  const rc=d.risk>0?d.state==='Critical'?'#dc2626':'#ea580c':'#16a34a';
+  let inspHtml=(!d.insp||d.insp==='—')?`<span style="color:#c0c8d8;font-style:italic">— pre-permit</span>`:(['Foundation','Framing','Electrical','Plumbing'].some(x=>d.insp.includes(x))?`<span class="tag t-orange" style="cursor:pointer" onclick="openUnit('${d.id}')">${d.insp}</span>`:`<span class="tag t-yellow" style="cursor:pointer" onclick="openUnit('${d.id}')">${d.insp}</span>`);
+  tr.innerHTML=`
+    <td><input type="checkbox" style="accent-color:#1a56db" ${selected.has(d.id)?'checked':''} onchange="toggleSel('${d.id}',this)"></td>
+    <td><svg width="9" height="9" viewBox="0 0 9 9"><circle cx="4.5" cy="4.5" r="4" fill="${dc}"/></svg></td>
+    <td style="color:#1a56db;font-weight:500">${d.id}</td>
+    <td><span class="cell-link" onclick="openUnit('${d.id}')">${d.subdiv}</span></td>
+    <td><span class="cell-link" onclick="openUnit('${d.id}')">${d.addr}</span></td>
+    <td style="color:#6b7a96">Lot ${d.lot}</td>
+    <td><span class="tag ${pm[d.phase]||'t-gray'}" style="cursor:pointer" onclick="openUnit('${d.id}')">${d.phase}</span></td>
+    <td>${inspHtml}</td>
+    <td><span class="sp ${sm[d.state]||'sp-pend'}" style="cursor:pointer" onclick="openUnit('${d.id}')">${d.state}</span></td>
+    <td style="color:${bc};font-weight:${d.blockers>0?700:400}">${d.blockers||'—'}</td>
+    <td style="color:${rc}">${d.risk?'$'+d.risk+'K':'—'}</td>
+    <td style="color:#4b5563">${d.agent}</td>
+    <td style="color:#6b7a96">${d.week}/48</td>
+    <td><span class="ra" onclick="openUnit('${d.id}')"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1 6a5 5 0 1010 0A5 5 0 001 6z" stroke="currentColor" stroke-width="1.2"/><circle cx="6" cy="6" r="1.5" fill="currentColor"/></svg></span></td>`;
+  return tr;
+}
+function doSort(key){if(sortKey===key)sortDir=sortDir==='asc'?'desc':'asc';else{sortKey=key;sortDir='asc';}document.querySelectorAll('[id^="sa-"]').forEach(el=>el.textContent='↕');const el=document.getElementById('sa-'+key);if(el)el.textContent=sortDir==='asc'?'▲':'▼';applySort();resetAndRender();}
+function toggleGroup(){groupMode=!groupMode;document.getElementById('grp-btn').innerHTML=groupMode?'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="2" rx="1" fill="currentColor"/><rect x="1" y="4.5" width="6" height="2" rx="1" fill="currentColor" opacity="0.6"/><rect x="1" y="8" width="4" height="2" rx="1" fill="currentColor" opacity="0.3"/></svg> Grouped ✓':'<svg width="10" height="10" viewBox="0 0 10 10" fill="none"><rect x="1" y="1" width="8" height="2" rx="1" fill="currentColor"/><rect x="1" y="4.5" width="6" height="2" rx="1" fill="currentColor" opacity="0.6"/><rect x="1" y="8" width="4" height="2" rx="1" fill="currentColor" opacity="0.3"/></svg> Group by subdivision';resetAndRender();}
+function toggleSel(id,cb){if(cb.checked)selected.add(id);else selected.delete(id);cb.closest('tr').classList.toggle('sel',cb.checked);updateBulkBar();}
+function selectAll(cb){filtered.forEach(d=>{if(cb.checked)selected.add(d.id);else selected.delete(d.id);});document.querySelectorAll('#tbody tr.dr input[type=checkbox]').forEach(el=>el.checked=cb.checked);document.querySelectorAll('#tbody tr.dr').forEach(r=>r.classList.toggle('sel',cb.checked));updateBulkBar();}
+function clearSel(){selected.clear();document.querySelectorAll('#tbody tr.dr input[type=checkbox]').forEach(el=>el.checked=false);document.querySelectorAll('#tbody tr.dr').forEach(r=>r.classList.remove('sel'));updateBulkBar();}
+function updateBulkBar(){document.getElementById('bulk-lbl').textContent=selected.size+' unit'+(selected.size!==1?'s':'')+' selected';document.getElementById('bulk-bar').classList.toggle('show',selected.size>0);}
+function clearAll(){document.getElementById('gsearch').value='';['f-id','f-subdiv','f-addr','f-lot','f-phase','f-insp','f-state','f-blockers','f-risk','f-agent','f-week'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});onFilter();}
+
+const observer=new IntersectionObserver(entries=>{if(entries[0].isIntersecting&&rendered<filtered.length)appendChunk();},{root:document.getElementById('table-wrap'),threshold:0.1});
+observer.observe(document.getElementById('sentinel'));
+
+/* ── VOICE AI ── */
+const callSteps=['Connecting... ringing TECO Will-Serve Dept.','Line picked up — navigating IVR menu','Reached Will-Serve dept. · on hold','Speaking with D. Patel — reviewing file','Will-serve confirmed · logging ETA'];
+function runCall(stripId,txtId){
+  document.getElementById(stripId).style.display='flex';
+  let i=0;const el=document.getElementById(txtId);
+  const iv=setInterval(()=>{i++;if(i<callSteps.length){el.textContent=callSteps[i];}else{clearInterval(iv);el.textContent='✓ Complete — will-serve confirmed, lender draw unblocked';el.style.color='#4ade80';const lb=document.getElementById('logs-list');if(lb){const r=document.createElement('div');r.className='ev-row';r.style.background='#f0fdf4';r.innerHTML='<div class="ev-time" style="color:#16a34a">Now</div><div class="ev-agent" style="color:#16a34a">Agent 03</div><div class="ev-body">TECO call complete. Reviewer D. Patel. Will-serve ETA 3 days. Blocker cleared, lender notified.</div>';lb.insertBefore(r,lb.firstChild);}}},1900);
+}
+function dialTECO(){switchTab('anomaly',document.querySelectorAll('.tab')[1]);setTimeout(()=>runCall('voice-strip2','vcall-txt2'),100);}
+
+buildTabs();onFilter();
+</script>
