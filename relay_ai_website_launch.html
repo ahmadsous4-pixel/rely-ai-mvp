@@ -1,0 +1,842 @@
+
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--navy:#070d1a;--navy2:#0d1526;--navy3:#111e35;--blue:#1a56db;--blue2:#2563eb;--green:#00c48c;--green2:#00e5a3;--border:rgba(255,255,255,0.07);--text:#e8ecf4;--muted:#6b7a96;--faint:#1a2840}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:var(--navy);color:var(--text);overflow-x:hidden;font-size:13px}
+
+/* SCROLLBAR */
+::-webkit-scrollbar{width:4px}::-webkit-scrollbar-track{background:var(--navy)}::-webkit-scrollbar-thumb{background:#1a3668;border-radius:2px}
+
+/* NAV */
+.nav{position:sticky;top:0;z-index:200;background:rgba(7,13,26,0.85);backdrop-filter:blur(12px);border-bottom:1px solid var(--border);padding:0 24px;height:54px;display:flex;align-items:center}
+.nav-inner{max-width:960px;margin:0 auto;width:100%;display:flex;align-items:center;gap:0}
+.nav-logo{display:flex;align-items:center;gap:8px;font-size:17px;font-weight:800;letter-spacing:-0.5px;color:#fff;cursor:pointer}
+.logo-mark{width:28px;height:28px;background:var(--blue);border-radius:7px;display:flex;align-items:center;justify-content:center}
+.nav-links{display:flex;gap:0;margin-left:32px}
+.nl{padding:0 14px;height:54px;display:flex;align-items:center;font-size:12px;color:var(--muted);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s}
+.nl:hover{color:#fff}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:8px}
+.btn-nav{padding:6px 14px;border:1px solid var(--border);border-radius:5px;font-size:12px;cursor:pointer;color:var(--muted);background:transparent;transition:all 0.12s}
+.btn-nav:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+.btn-nav-cta{padding:7px 16px;background:var(--blue);border:none;border-radius:5px;font-size:12px;cursor:pointer;color:#fff;font-weight:600;transition:all 0.12s}
+.btn-nav-cta:hover{background:var(--blue2)}
+
+/* HERO */
+.hero{padding:80px 24px 60px;text-align:center;position:relative;overflow:hidden}
+.hero-bg{position:absolute;inset:0;pointer-events:none;z-index:0}
+.grid-lines{position:absolute;inset:0;background-image:linear-gradient(rgba(26,86,219,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(26,86,219,0.04) 1px,transparent 1px);background-size:40px 40px}
+.glow-1{position:absolute;top:-120px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(26,86,219,0.18) 0%,transparent 70%);pointer-events:none}
+.glow-2{position:absolute;top:40px;left:20%;width:300px;height:300px;background:radial-gradient(ellipse,rgba(0,196,140,0.07) 0%,transparent 70%);pointer-events:none}
+.hero-inner{max-width:700px;margin:0 auto;position:relative;z-index:1}
+.hero-badge{display:inline-flex;align-items:center;gap:7px;background:rgba(26,86,219,0.12);border:1px solid rgba(26,86,219,0.3);border-radius:20px;padding:5px 13px;font-size:11px;font-weight:600;color:#7eb6ff;margin-bottom:24px}
+.hero-badge-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:pp 2s infinite}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:0.3}}
+h1{font-size:52px;font-weight:800;letter-spacing:-2px;line-height:1.05;color:#fff;margin-bottom:20px}
+h1 .accent{background:linear-gradient(135deg,#1a56db,#00c48c);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text}
+.hero-sub{font-size:16px;color:var(--muted);max-width:520px;margin:0 auto 32px;line-height:1.75}
+.hero-ctas{display:flex;align-items:center;justify-content:center;gap:10px;margin-bottom:14px}
+.cta-main{padding:13px 28px;background:var(--blue);border:none;border-radius:7px;font-size:14px;font-weight:700;color:#fff;cursor:pointer;display:inline-flex;align-items:center;gap:7px;transition:all 0.15s}
+.cta-main:hover{background:var(--blue2);transform:translateY(-1px)}
+.cta-ghost{padding:13px 24px;background:transparent;border:1px solid var(--border);border-radius:7px;font-size:14px;color:var(--muted);cursor:pointer;transition:all 0.15s}
+.cta-ghost:hover{border-color:rgba(255,255,255,0.2);color:#fff}
+.hero-note{font-size:11px;color:#3a4e68}
+
+/* TRUST BAR */
+.trust{padding:24px;border-top:1px solid var(--border);border-bottom:1px solid var(--border);background:var(--navy2)}
+.trust-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;gap:0}
+.trust-label{font-size:10px;text-transform:uppercase;letter-spacing:0.8px;color:#3a4e68;font-weight:700;flex-shrink:0;padding-right:24px;border-right:1px solid var(--border)}
+.trust-logos{display:flex;align-items:center;gap:20px;padding-left:24px;flex-wrap:wrap}
+.trust-logo{font-size:11px;font-weight:700;color:#3a4e68}
+
+/* STATS STRIP */
+.stats{padding:48px 24px;background:var(--navy2)}
+.stats-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.stat{background:var(--navy2);padding:24px;text-align:center}
+.stat-val{font-size:36px;font-weight:800;color:#fff;letter-spacing:-1.5px;line-height:1}
+.stat-val .hi{color:var(--green)}
+.stat-lbl{font-size:11px;color:var(--muted);margin-top:5px}
+.stat-sub{font-size:10px;color:#2a3e58;margin-top:2px}
+
+/* SECTION SHARED */
+.section{padding:72px 24px}
+.sec-inner{max-width:960px;margin:0 auto}
+.eyebrow{font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:var(--green);margin-bottom:10px}
+.sec-h2{font-size:34px;font-weight:800;letter-spacing:-1px;color:#fff;margin-bottom:10px;line-height:1.15}
+.sec-sub{font-size:14px;color:var(--muted);max-width:520px;line-height:1.75;margin-bottom:36px}
+
+/* AGENTS SECTION */
+.agent-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.agent-card{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:20px;transition:all 0.15s;cursor:default}
+.agent-card:hover{border-color:rgba(26,86,219,0.4);background:rgba(26,86,219,0.06)}
+.agent-card.relay-only{border-color:rgba(0,196,140,0.2)}
+.agent-card.relay-only:hover{border-color:rgba(0,196,140,0.5);background:rgba(0,196,140,0.04)}
+.ac-top{display:flex;align-items:center;gap:12px;margin-bottom:10px}
+.ac-num{width:34px;height:34px;border-radius:8px;background:var(--faint);color:var(--blue);font-size:11px;font-weight:800;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.agent-card.relay-only .ac-num{color:var(--green);background:rgba(0,196,140,0.08)}
+.ac-name{font-size:13px;font-weight:700;color:#fff}
+.ac-tag{font-size:10px;color:var(--muted);margin-top:1px}
+.ac-desc{font-size:12px;color:var(--muted);line-height:1.65}
+.ac-badge{font-size:9px;font-weight:700;padding:2px 7px;border-radius:3px;margin-top:8px;display:inline-block}
+.ab-relay{background:rgba(0,196,140,0.12);color:var(--green)}
+.ab-shared{background:rgba(26,86,219,0.12);color:#7eb6ff}
+
+/* VOICE AI DEMO */
+.vai-section{padding:72px 24px;background:var(--navy2);border-top:1px solid var(--border);border-bottom:1px solid var(--border)}
+.vai-inner{max-width:960px;margin:0 auto;display:grid;grid-template-columns:1fr 1fr;gap:40px;align-items:center}
+.vai-screen{background:var(--navy);border:1px solid var(--border);border-radius:10px;overflow:hidden}
+.vai-titlebar{padding:10px 14px;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:8px;background:rgba(255,255,255,0.02)}
+.vai-dots{display:flex;gap:5px}.vai-dot{width:9px;height:9px;border-radius:50%}
+.vai-screen-title{font-size:10px;color:var(--muted);margin-left:auto;margin-right:auto;font-weight:600}
+.vai-body{padding:14px}
+.vai-calling{display:flex;align-items:center;gap:8px;padding:8px 10px;background:rgba(0,196,140,0.08);border:1px solid rgba(0,196,140,0.15);border-radius:6px;margin-bottom:12px;font-size:11px}
+.vai-pline{display:flex;gap:6px;margin-bottom:6px;font-size:11px;line-height:1.6}
+.vai-relay{color:#7eb6ff;font-weight:700;flex-shrink:0}
+.vai-agency{color:var(--green);font-weight:700;flex-shrink:0}
+.vai-txt{color:#8a9ab0}
+.vai-result-box{background:rgba(0,196,140,0.06);border:1px solid rgba(0,196,140,0.2);border-radius:6px;padding:10px 12px;margin-top:10px;font-size:10px;color:var(--green);line-height:1.8}
+.vai-play-btn{padding:10px 20px;background:var(--green);border:none;border-radius:6px;color:#000;font-size:12px;font-weight:700;cursor:pointer;display:inline-flex;align-items:center;gap:6px;margin-top:16px;transition:all 0.12s}
+.vai-play-btn:hover{background:var(--green2)}
+
+/* LIFECYCLE */
+.lc-section{padding:72px 24px;background:var(--navy)}
+.lc-inner{max-width:960px;margin:0 auto}
+.lc-track{display:flex;gap:0;margin-top:32px;position:relative}
+.lc-track::before{content:'';position:absolute;top:20px;left:0;right:0;height:2px;background:var(--border);z-index:0}
+.lc-step{flex:1;padding-top:32px;padding-right:12px;position:relative;z-index:1}
+.lc-node{width:40px;height:40px;border-radius:50%;border:2px solid var(--border);background:var(--navy2);display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:var(--muted);position:absolute;top:0;left:0}
+.lc-step.done .lc-node{border-color:var(--blue);background:rgba(26,86,219,0.15);color:#7eb6ff}
+.lc-step.relay .lc-node{border-color:var(--green);background:rgba(0,196,140,0.1);color:var(--green)}
+.lc-step.pf .lc-node{border-color:#6366f1;background:rgba(99,102,241,0.1);color:#a5b4fc}
+.lc-step-name{font-size:12px;font-weight:700;color:#fff;margin-bottom:4px}
+.lc-step-sub{font-size:10px;color:var(--muted);line-height:1.5}
+.lc-chip{font-size:9px;font-weight:700;padding:2px 6px;border-radius:3px;margin-top:5px;display:inline-block}
+.chip-relay{background:rgba(0,196,140,0.1);color:var(--green)}
+.chip-pf{background:rgba(99,102,241,0.1);color:#a5b4fc}
+
+/* VS TABLE */
+.vs-section{padding:72px 24px;background:var(--navy2);border-top:1px solid var(--border)}
+.vs-inner{max-width:960px;margin:0 auto}
+.vs-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;margin-top:32px}
+.vs-col{border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.vs-col.winner{border-color:rgba(0,196,140,0.4)}
+.vs-hdr{padding:14px 16px;border-bottom:1px solid var(--border);background:rgba(255,255,255,0.02)}
+.vs-hdr.winner-hdr{background:rgba(0,196,140,0.05)}
+.vs-name{font-size:13px;font-weight:700;color:#fff}
+.vs-tag{font-size:10px;color:var(--muted);margin-top:1px}
+.vs-row{display:flex;align-items:center;gap:8px;padding:8px 16px;border-bottom:1px solid rgba(255,255,255,0.03);font-size:11px;color:#8a9ab0}
+.vs-row:last-child{border-bottom:none}
+.check-y{color:var(--green);font-weight:700;flex-shrink:0;font-size:12px}
+.check-n{color:#4d1a1a;flex-shrink:0;font-size:12px}
+.check-p{color:#6366f1;flex-shrink:0;font-size:12px}
+
+/* TESTIMONIALS */
+.t-section{padding:72px 24px;background:var(--navy)}
+.t-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:12px;margin-top:32px}
+.t-card{background:var(--navy2);border:1px solid var(--border);border-radius:8px;padding:20px}
+.t-stars{color:#f59e0b;font-size:11px;margin-bottom:8px;letter-spacing:1px}
+.t-quote{font-size:12px;color:#8a9ab0;line-height:1.75;margin-bottom:14px}
+.t-author{font-size:11px;font-weight:700;color:#e2e8f0}
+.t-role{font-size:10px;color:var(--muted);margin-top:2px}
+.t-card.featured{border-color:rgba(0,196,140,0.3);background:rgba(0,196,140,0.03)}
+
+/* PRICING */
+.p-section{padding:72px 24px;background:var(--navy2);border-top:1px solid var(--border)}
+.p-grid{display:grid;grid-template-columns:1fr 1.1fr 1fr;gap:12px;margin-top:32px;align-items:start}
+.p-card{background:var(--navy3);border:1px solid var(--border);border-radius:8px;padding:22px;position:relative}
+.p-card.featured{border-color:rgba(26,86,219,0.5);background:rgba(26,86,219,0.06)}
+.p-badge{position:absolute;top:-11px;left:50%;transform:translateX(-50%);background:var(--blue);color:#fff;font-size:10px;font-weight:700;padding:3px 12px;border-radius:20px;white-space:nowrap}
+.p-tier{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);margin-bottom:8px}
+.p-price{font-size:28px;font-weight:800;color:#fff;letter-spacing:-1px;line-height:1;margin-bottom:2px}
+.p-unit{font-size:11px;color:var(--muted);margin-bottom:16px}
+.p-item{display:flex;gap:7px;font-size:11px;color:#8a9ab0;margin-bottom:7px;line-height:1.5}
+.p-item::before{content:'✓';color:var(--green);font-weight:700;flex-shrink:0}
+.p-cta{width:100%;padding:9px;background:rgba(26,86,219,0.15);border:1px solid rgba(26,86,219,0.3);border-radius:5px;color:#7eb6ff;font-size:12px;font-weight:600;cursor:pointer;margin-top:16px;transition:all 0.12s}
+.p-cta:hover{background:rgba(26,86,219,0.25)}
+.p-card.featured .p-cta{background:var(--blue);border-color:var(--blue);color:#fff}
+.p-card.featured .p-cta:hover{background:var(--blue2)}
+
+/* CTA SECTION */
+.cta-section{padding:80px 24px;text-align:center;background:var(--navy);position:relative;overflow:hidden}
+.cta-glow{position:absolute;bottom:-100px;left:50%;transform:translateX(-50%);width:600px;height:400px;background:radial-gradient(ellipse,rgba(26,86,219,0.12) 0%,transparent 70%);pointer-events:none}
+.cta-section h2{font-size:36px;font-weight:800;letter-spacing:-1px;color:#fff;margin-bottom:10px;position:relative}
+.cta-section p{font-size:14px;color:var(--muted);margin-bottom:28px;position:relative}
+.cta-btns{display:flex;align-items:center;justify-content:center;gap:10px;position:relative}
+
+/* FOOTER */
+.footer{background:var(--navy2);border-top:1px solid var(--border);padding:32px 24px}
+.foot-inner{max-width:960px;margin:0 auto;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px}
+.foot-logo{font-size:15px;font-weight:800;color:#fff;display:flex;align-items:center;gap:6px}
+.foot-links{display:flex;gap:16px;flex-wrap:wrap}
+.foot-link{font-size:11px;color:var(--muted);cursor:pointer}
+.foot-link:hover{color:#fff}
+.foot-copy{font-size:10px;color:#2a3e58}
+
+/* ONBOARDING MODAL */
+.modal-overlay{position:fixed;inset:0;background:rgba(4,8,16,0.92);z-index:1000;display:none;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:var(--navy2);border:1px solid rgba(26,86,219,0.25);border-radius:12px;width:100%;max-width:580px;max-height:86vh;overflow:hidden;display:flex;flex-direction:column}
+.modal-header{padding:18px 22px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0}
+.modal-title{font-size:14px;font-weight:700;color:#fff;display:flex;align-items:center;gap:8px}
+.modal-close{width:26px;height:26px;border-radius:50%;background:rgba(255,255,255,0.06);border:none;color:var(--muted);cursor:pointer;font-size:14px;display:flex;align-items:center;justify-content:center}
+.modal-close:hover{background:rgba(255,255,255,0.1);color:#fff}
+.modal-progress{padding:12px 22px;border-bottom:1px solid var(--border);flex-shrink:0;background:rgba(255,255,255,0.02)}
+.prog-steps{display:flex;align-items:center;gap:0}
+.ps{display:flex;align-items:center;gap:6px;font-size:11px;color:var(--muted);flex-shrink:0}
+.ps-dot{width:22px;height:22px;border-radius:50%;border:1.5px solid #1e2e44;background:var(--navy);display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;color:var(--muted);transition:all 0.2s}
+.ps-dot.done{background:var(--blue);border-color:var(--blue);color:#fff}
+.ps-dot.curr{background:transparent;border-color:var(--blue);color:#7eb6ff;box-shadow:0 0 0 3px rgba(26,86,219,0.15)}
+.ps-line{flex:1;height:1px;background:#1e2e44;margin:0 6px}
+.ps-line.done{background:var(--blue)}
+.ps-lbl{font-size:9px;color:var(--muted)}
+.ps.curr .ps-lbl,.ps.done .ps-lbl{color:#7eb6ff}
+.modal-body{flex:1;overflow-y:auto;padding:22px}
+.modal-body::-webkit-scrollbar{width:3px}
+.modal-body::-webkit-scrollbar-thumb{background:#1a3668;border-radius:2px}
+.modal-footer{padding:14px 22px;border-top:1px solid var(--border);display:flex;align-items:center;justify-content:space-between;flex-shrink:0;background:rgba(255,255,255,0.01)}
+.modal-step{display:none}
+.modal-step.active{display:block}
+.step-h{font-size:16px;font-weight:700;color:#fff;margin-bottom:4px}
+.step-sub{font-size:12px;color:var(--muted);margin-bottom:18px;line-height:1.6}
+.field{margin-bottom:14px}
+.fl{font-size:11px;font-weight:600;color:#c8d0db;margin-bottom:5px;display:flex;align-items:center;gap:6px}
+.fl-why{font-size:10px;color:var(--muted);font-weight:400;font-style:italic}
+.fi{width:100%;background:rgba(255,255,255,0.04);border:1px solid #1e2e44;border-radius:5px;padding:8px 11px;font-size:12px;color:#e8ecf4;outline:none;transition:all 0.12s}
+.fi:focus{border-color:var(--blue);background:rgba(26,86,219,0.05)}
+.fi::placeholder{color:#2a3e58}
+select.fi{cursor:pointer}
+.fg2{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.fg3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px}
+.tag-row{display:flex;flex-wrap:wrap;gap:6px;margin-top:5px}
+.ttag{padding:5px 11px;border:1px solid #1e2e44;border-radius:20px;font-size:11px;color:var(--muted);cursor:pointer;background:rgba(255,255,255,0.02);transition:all 0.12s}
+.ttag:hover{border-color:rgba(26,86,219,0.4);color:#7eb6ff}
+.ttag.on{background:rgba(26,86,219,0.12);border-color:rgba(26,86,219,0.4);color:#7eb6ff;font-weight:600}
+.mode-cards{display:flex;flex-direction:column;gap:8px}
+.mc{border:1.5px solid #1e2e44;border-radius:7px;padding:13px 14px;cursor:pointer;transition:all 0.15s;background:rgba(255,255,255,0.02)}
+.mc:hover{border-color:rgba(26,86,219,0.3);background:rgba(26,86,219,0.04)}
+.mc.on{border-color:var(--blue);background:rgba(26,86,219,0.08)}
+.mc-top{display:flex;align-items:center;gap:10px}
+.mc-ico{width:30px;height:30px;border-radius:7px;background:rgba(255,255,255,0.05);display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+.mc-name{font-size:13px;font-weight:700;color:#e2e8f0}
+.mc-tag{font-size:10px;color:var(--muted);margin-top:1px}
+.mc-check{width:18px;height:18px;border-radius:50%;border:1.5px solid #1e2e44;margin-left:auto;transition:all 0.15s;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent}
+.mc.on .mc-check{background:var(--blue);border-color:var(--blue);color:#fff}
+.mc-desc{font-size:11px;color:var(--muted);margin-top:6px;margin-left:40px;line-height:1.55}
+.launch-hero{text-align:center;padding:10px 0}
+.launch-icon{font-size:48px;margin-bottom:12px}
+.launch-h{font-size:20px;font-weight:800;color:#fff;letter-spacing:-0.5px;margin-bottom:6px}
+.launch-sub{font-size:12px;color:var(--muted);line-height:1.7;margin-bottom:20px}
+.launch-items{text-align:left;background:rgba(0,196,140,0.04);border:1px solid rgba(0,196,140,0.15);border-radius:7px;padding:14px}
+.li-row{display:flex;align-items:flex-start;gap:8px;padding:6px 0;border-bottom:1px solid rgba(255,255,255,0.04);font-size:11px}
+.li-row:last-child{border-bottom:none}
+.li-ico{width:22px;height:22px;border-radius:5px;background:rgba(0,196,140,0.1);display:flex;align-items:center;justify-content:center;flex-shrink:0;font-size:11px}
+.li-txt{flex:1;color:#8a9ab0;line-height:1.5}
+.li-txt strong{color:#e2e8f0}
+.upload-area{border:1.5px dashed #1e2e44;border-radius:6px;padding:16px;text-align:center;cursor:pointer;transition:all 0.12s;background:rgba(255,255,255,0.01);margin-top:5px}
+.upload-area:hover{border-color:rgba(26,86,219,0.4);background:rgba(26,86,219,0.04)}
+.upload-area.done{border-color:rgba(0,196,140,0.4);background:rgba(0,196,140,0.04)}
+.info-pill{background:rgba(26,86,219,0.08);border:1px solid rgba(26,86,219,0.2);border-radius:5px;padding:9px 12px;font-size:11px;color:#7eb6ff;line-height:1.65;margin-bottom:14px}
+.info-pill strong{color:#e2e8f0}
+.divider{height:1px;background:#0d1a2e;margin:14px 0}
+.btn-back{padding:7px 16px;background:transparent;border:1px solid #1e2e44;border-radius:5px;color:var(--muted);font-size:12px;cursor:pointer;transition:all 0.12s}
+.btn-back:hover{border-color:#2a3e58;color:#fff}
+.btn-next{padding:8px 20px;background:var(--blue);border:none;border-radius:5px;color:#fff;font-size:12px;font-weight:700;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.12s}
+.btn-next:hover{background:var(--blue2)}
+.btn-launch{padding:9px 24px;background:var(--green);border:none;border-radius:5px;color:#000;font-size:12px;font-weight:800;cursor:pointer;display:flex;align-items:center;gap:5px;transition:all 0.12s}
+.btn-launch:hover{background:var(--green2)}
+.chk-row{display:flex;gap:8px;align-items:flex-start;padding:7px 0;border-bottom:1px solid rgba(255,255,255,0.03);cursor:pointer}
+.chk-row:last-child{border-bottom:none}
+.chkbox{width:15px;height:15px;border-radius:3px;border:1.5px solid #1e2e44;flex-shrink:0;margin-top:1px;display:flex;align-items:center;justify-content:center;font-size:9px;color:transparent;transition:all 0.12s}
+.chk-row.on .chkbox{background:var(--blue);border-color:var(--blue);color:#fff}
+.chk-txt{font-size:11px;color:#8a9ab0;line-height:1.5;flex:1}
+.chk-txt strong{color:#c8d0db}
+</style>
+
+<!-- NAV -->
+<div class="nav">
+  <div class="nav-inner">
+    <div class="nav-logo" onclick="window.scrollTo({top:0,behavior:'smooth'})">
+      <div class="logo-mark"><svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 5-10 5V2z" fill="#fff"/></svg></div>
+      Relay<span style="color:var(--green)">AI</span>
+    </div>
+    <div class="nav-links">
+      <div class="nl">Product</div>
+      <div class="nl">How it works</div>
+      <div class="nl">Pricing</div>
+      <div class="nl">vs PermitFlow</div>
+    </div>
+    <div class="nav-right">
+      <button class="btn-nav">Sign in</button>
+      <button class="btn-nav-cta" onclick="openModal()">Get started free</button>
+    </div>
+  </div>
+</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="hero-bg"><div class="grid-lines"></div><div class="glow-1"></div><div class="glow-2"></div></div>
+  <div class="hero-inner">
+    <div class="hero-badge"><div class="hero-badge-dot"></div>Backed by Suffolk Technologies · Tampa FL → National</div>
+    <h1>Residential development<br>fails on <span class="accent">coordination.</span><br>We fixed it.</h1>
+    <p class="hero-sub">Relay AI is the agentic platform that sits between every stakeholder and drives projects to completion — calling agencies, chaining inspections, tracking CO punchlists, sending briefs. While you sleep.</p>
+    <div class="hero-ctas">
+      <button class="cta-main" onclick="openModal()">
+        <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 5-10 5V2z" fill="#fff"/></svg>
+        Start free — 10 min setup
+      </button>
+      <button class="cta-ghost">Watch demo ↗</button>
+    </div>
+    <div class="hero-note">No sales call required. Agents activate immediately. Credit cards, not LOIs.</div>
+  </div>
+</section>
+
+<!-- TRUST BAR -->
+<div class="trust">
+  <div class="trust-inner">
+    <div class="trust-label">Built for</div>
+    <div class="trust-logos">
+      <div class="trust-logo">SUFFOLK TECHNOLOGIES</div>
+      <div class="trust-logo">HILLSBOROUGH COUNTY FL</div>
+      <div class="trust-logo">PASCO COUNTY FL</div>
+      <div class="trust-logo">RESIDENTIAL DEVELOPERS</div>
+      <div class="trust-logo">HOME BUILDERS</div>
+    </div>
+  </div>
+</div>
+
+<!-- STATS -->
+<section class="stats" style="padding:40px 24px">
+  <div class="stats-inner">
+    <div class="stat"><div class="stat-val"><span class="hi">52</span></div><div class="stat-lbl">Weeks saved per portfolio</div><div class="stat-sub">4 months live data</div></div>
+    <div class="stat"><div class="stat-val">$<span class="hi">30K</span></div><div class="stat-lbl">Saved per Voice AI call</div><div class="stat-sub">$0.40 cost · 14 days delay</div></div>
+    <div class="stat"><div class="stat-val"><span class="hi">6</span></div><div class="stat-lbl">Specialized agents</div><div class="stat-sub">Running 24/7 autonomously</div></div>
+    <div class="stat"><div class="stat-val"><span class="hi">5.2</span>x</div><div class="stat-lbl">ROI on $150K raise</div><div class="stat-sub">First 4 months</div></div>
+  </div>
+</section>
+
+<!-- AGENTS -->
+<section class="section" style="background:var(--navy)">
+  <div class="sec-inner">
+    <div class="eyebrow">Six agents. One brain.</div>
+    <div class="sec-h2">Every stakeholder.<br>Every phase. Always on.</div>
+    <div class="sec-sub">Each agent owns a scope. The memory layer keeps them in sync — so the right action happens at the right moment, across every unit, 24/7.</div>
+    <div class="agent-grid">
+      <div class="agent-card">
+        <div class="ac-top"><div class="ac-num">01</div><div><div class="ac-name">Entitlement</div><div class="ac-tag">Prep the hearing</div></div></div>
+        <div class="ac-desc">Detects agenda deadlines 72 hrs out. Drafts traffic-study responses, flags civil eng for sign-off, assembles full county packet. Zero developer input.</div>
+        <span class="ac-badge ab-relay">Relay AI only</span>
+      </div>
+      <div class="agent-card">
+        <div class="ac-top"><div class="ac-num">02</div><div><div class="ac-name">Permit</div><div class="ac-tag">File and correct</div></div></div>
+        <div class="ac-desc">Watches city portal every 2 hours. Moment comments are issued, drafts the correction set and routes to architect for review. Resubmits automatically.</div>
+        <span class="ac-badge ab-shared">Full lifecycle</span>
+      </div>
+      <div class="agent-card relay-only">
+        <div class="ac-top"><div class="ac-num">03</div><div><div class="ac-name">Agency Coordinator</div><div class="ac-tag">Break the silence</div></div></div>
+        <div class="ac-desc">Agency silent 48hrs? Voice AI dials at 9:02 AM, navigates IVR, reaches the right dept, logs reviewer name + ETA. One call costs $0.40. Saves 14 days.</div>
+        <span class="ac-badge ab-relay">Voice AI · Relay only</span>
+      </div>
+      <div class="agent-card relay-only">
+        <div class="ac-top"><div class="ac-num">04</div><div><div class="ac-name">Inspector</div><div class="ac-tag">Chain the inspections</div></div></div>
+        <div class="ac-desc">Framing passes Tuesday. Auto-schedules electrical for Thursday, confirms inspector availability, notifies GC with result and next date. Zero phone calls.</div>
+        <span class="ac-badge ab-relay">Relay AI only</span>
+      </div>
+      <div class="agent-card relay-only">
+        <div class="ac-top"><div class="ac-num">05</div><div><div class="ac-name">Stakeholder Brief</div><div class="ac-tag">Same facts, right frame</div></div></div>
+        <div class="ac-desc">Every Friday 4 PM: tailored status memos to lender, city, GC, architect. Same data. Four different lenses. Lender gets draw status. GC gets schedule. Zero writing.</div>
+        <span class="ac-badge ab-relay">Relay AI only</span>
+      </div>
+      <div class="agent-card relay-only">
+        <div class="ac-top"><div class="ac-num">06</div><div><div class="ac-name">Certificate of Occupancy</div><div class="ac-tag">Close it out</div></div></div>
+        <div class="ac-desc">Tracks 17-item CO punchlist. Pings each vendor daily until clear. Files CO request the moment the last item resolves. You get the keys — zero vendor chasing.</div>
+        <span class="ac-badge ab-relay">Relay AI only</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VOICE AI -->
+<section class="vai-section">
+  <div class="vai-inner">
+    <div>
+      <div class="eyebrow">Voice AI · Agent 03</div>
+      <div class="sec-h2" style="margin-bottom:10px">The only platform<br>that calls agencies<br>for you.</div>
+      <p style="font-size:13px;color:var(--muted);line-height:1.8;margin-bottom:20px">When TECO goes silent for 42 days, Relay AI doesn't send another email. It dials them at 9:02 AM, navigates the IVR, reaches Will-Serve, logs the reviewer's name and ETA, and notifies your lender. You find out when it's done.</p>
+      <div style="background:rgba(0,196,140,0.06);border:1px solid rgba(0,196,140,0.15);border-radius:7px;padding:12px 14px;font-size:12px;color:var(--green);font-weight:600;margin-bottom:18px">One call · $0.40 cost · 14 days saved · $30,000 in carrying costs protected</div>
+      <button class="vai-play-btn" onclick="playCall()">▶ Play live call simulation</button>
+    </div>
+    <div class="vai-screen">
+      <div class="vai-titlebar">
+        <div class="vai-dots"><div class="vai-dot" style="background:#ef4444"></div><div class="vai-dot" style="background:#f59e0b"></div><div class="vai-dot" style="background:#22c55e"></div></div>
+        <div class="vai-screen-title">Agent 03 · Voice AI · TECO Utility</div>
+      </div>
+      <div class="vai-body">
+        <div class="vai-calling"><div class="hero-badge-dot"></div><span style="color:var(--green);font-weight:600">Live call · Will-Serve Dept.</span></div>
+        <div id="call-lines">
+          <div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> Good morning. Calling re will-serve for 412 Lakewood Blvd, project Lakewood Commons.</span></div>
+          <div class="vai-pline"><span class="vai-agency">TECO:</span><span class="vai-txt"> Let me pull that up... yes I see it. Assigned to D. Patel.</span></div>
+          <div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> What's the expected turnaround?</span></div>
+          <div class="vai-pline"><span class="vai-agency">TECO:</span><span class="vai-txt"> 3 business days. Letter goes out by Friday.</span></div>
+          <div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> Confirmed. Logging D. Patel, 3-day ETA. Thank you.</span></div>
+        </div>
+        <div class="vai-result-box" id="call-result">✓ Call complete · Reviewer: D. Patel · ETA: 3 days<br>→ Lender notified · $450K draw gate cleared · Logged to memory</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- LIFECYCLE -->
+<section class="lc-section">
+  <div class="lc-inner">
+    <div class="eyebrow">Full lifecycle coverage</div>
+    <div class="sec-h2">PermitFlow covers permitting.<br>Relay AI covers everything.</div>
+    <div style="font-size:13px;color:var(--muted);max-width:500px;line-height:1.75;margin-bottom:0">From first hearing to handing over the keys — across every unit, every stakeholder, 24/7.</div>
+    <div class="lc-track">
+      <div class="lc-step relay" style="padding-left:50px">
+        <div class="lc-node">01</div>
+        <div class="lc-step-name">Entitlement</div>
+        <div class="lc-step-sub">Hearing prep · traffic study · packet assembly</div>
+        <span class="lc-chip chip-relay">Agent 01 + 03</span>
+      </div>
+      <div class="lc-step pf" style="padding-left:50px">
+        <div class="lc-node">02</div>
+        <div class="lc-step-name">Permitting</div>
+        <div class="lc-step-sub">Filing · corrections · portal monitoring</div>
+        <span class="lc-chip chip-relay" style="margin-right:4px">Agent 02</span>
+        <span class="lc-chip chip-pf">PermitFlow stops here</span>
+      </div>
+      <div class="lc-step relay" style="padding-left:50px">
+        <div class="lc-node">03</div>
+        <div class="lc-step-name">Inspections</div>
+        <div class="lc-step-sub">Foundation → framing → electrical → final</div>
+        <span class="lc-chip chip-relay">Agent 04</span>
+      </div>
+      <div class="lc-step relay" style="padding-left:50px">
+        <div class="lc-node">04</div>
+        <div class="lc-step-name">CO / Closeout</div>
+        <div class="lc-step-sub">17-item punchlist · vendor pings · auto-file</div>
+        <span class="lc-chip chip-relay">Agent 06</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- VS -->
+<section class="vs-section">
+  <div class="vs-inner">
+    <div class="eyebrow">Competitive landscape</div>
+    <div class="sec-h2">Nobody else<br>coordinates stakeholders.</div>
+    <div class="vs-grid">
+      <div class="vs-col">
+        <div class="vs-hdr"><div class="vs-name">PermitFlow / Pulley</div><div class="vs-tag">Document automation · stops at permits</div></div>
+        <div class="vs-row"><span class="check-y">✓</span>Permit form prep & submission</div>
+        <div class="vs-row"><span class="check-y">✓</span>AHJ portal monitoring</div>
+        <div class="vs-row"><span class="check-n">✗</span>Voice AI agency calls</div>
+        <div class="vs-row"><span class="check-n">✗</span>Inspection chain automation</div>
+        <div class="vs-row"><span class="check-n">✗</span>CO punchlist tracking</div>
+        <div class="vs-row"><span class="check-n">✗</span>Stakeholder brief generation</div>
+        <div class="vs-row"><span class="check-n">✗</span>Entitlement hearing prep</div>
+        <div class="vs-row"><span class="check-n">✗</span>Memory layer / agency intelligence</div>
+      </div>
+      <div class="vs-col">
+        <div class="vs-hdr"><div class="vs-name">Procore / Shovels</div><div class="vs-tag">Construction mgmt · data only · no action</div></div>
+        <div class="vs-row"><span class="check-y">✓</span>Project management dashboard</div>
+        <div class="vs-row"><span class="check-y">✓</span>Document storage</div>
+        <div class="vs-row"><span class="check-n">✗</span>Agentic actions</div>
+        <div class="vs-row"><span class="check-n">✗</span>Voice AI calls</div>
+        <div class="vs-row"><span class="check-n">✗</span>Automatic scheduling</div>
+        <div class="vs-row"><span class="check-n">✗</span>Stakeholder coordination</div>
+        <div class="vs-row"><span class="check-n">✗</span>CO automation</div>
+        <div class="vs-row"><span class="check-n">✗</span>Cross-agent intelligence</div>
+      </div>
+      <div class="vs-col winner">
+        <div class="vs-hdr winner-hdr">
+          <div style="display:flex;align-items:center;gap:7px"><svg width="13" height="13" viewBox="0 0 13 13" fill="none"><path d="M1.5 1.5l10 5-10 5V1.5z" fill="var(--green)"/></svg><div class="vs-name" style="color:var(--green)">Relay AI</div></div>
+          <div class="vs-tag">Full lifecycle · 6 agents · Voice AI · memory</div>
+        </div>
+        <div class="vs-row"><span class="check-y">✓</span>Permit form prep & submission</div>
+        <div class="vs-row"><span class="check-y">✓</span>AHJ portal monitoring</div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">Voice AI dials agencies directly</strong></div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">Foundation → framing → final chain</strong></div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">17-item CO punchlist · auto-files</strong></div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">4 stakeholder-tailored briefs weekly</strong></div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">Hearing packets + civil eng routing</strong></div>
+        <div class="vs-row"><span class="check-y">✓</span><strong style="color:#e2e8f0">Learns every agency. Compounds over time.</strong></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- TESTIMONIALS -->
+<section class="t-section">
+  <div class="sec-inner">
+    <div class="eyebrow" style="text-align:center">What developers say</div>
+    <div class="sec-h2" style="text-align:center">Built by a developer.<br>For developers.</div>
+    <div class="t-grid">
+      <div class="t-card">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-quote">"TECO hadn't responded in 6 weeks. Relay AI called them at 9 AM, got will-serve confirmed, and unblocked my $450K draw. I didn't make a single phone call."</div>
+        <div class="t-author">Residential Developer</div>
+        <div class="t-role">Tampa, FL · 127-unit subdivision</div>
+      </div>
+      <div class="t-card featured">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-quote">"The inspection chain feature alone saved us 8 weeks. Framing passes, electrical is automatically scheduled, GC is notified. I didn't know software could do this."</div>
+        <div class="t-author">Home Builder</div>
+        <div class="t-role">Wesley Chapel, FL · 58 units</div>
+      </div>
+      <div class="t-card">
+        <div class="t-stars">★★★★★</div>
+        <div class="t-quote">"The Friday stakeholder brief is something I used to spend 3 hours writing manually. Now it just shows up in everyone's inbox, perfectly framed. Every week. Zero effort."</div>
+        <div class="t-author">Developer / GC</div>
+        <div class="t-role">Riverview, FL · 36 units</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section class="p-section">
+  <div class="sec-inner">
+    <div class="eyebrow" style="text-align:center">Pricing</div>
+    <div class="sec-h2" style="text-align:center">Priced on projects<br>and outcomes. Not seats.</div>
+    <div class="p-grid">
+      <div class="p-card">
+        <div class="p-tier">Per-Project SaaS</div>
+        <div class="p-price">$500–2K</div>
+        <div class="p-unit">per month · active project</div>
+        <div class="p-item">All 6 agents running 24/7</div>
+        <div class="p-item">Voice AI calls included</div>
+        <div class="p-item">Weekly stakeholder briefs</div>
+        <div class="p-item">Inspection chain automation</div>
+        <div class="p-item">CO punchlist tracking</div>
+        <div class="p-item">No project active, no charge</div>
+        <button class="p-cta" onclick="openModal()">Get started</button>
+      </div>
+      <div class="p-card featured">
+        <div class="p-badge">Most popular</div>
+        <div class="p-tier">Outcome-Based</div>
+        <div class="p-price">$500–2K</div>
+        <div class="p-unit">per milestone cleared</div>
+        <div class="p-item">Pay when entitlement clears</div>
+        <div class="p-item">Pay when permits issue</div>
+        <div class="p-item">Pay when inspections pass</div>
+        <div class="p-item">Pay when CO files</div>
+        <div class="p-item">Aligned to your outcomes</div>
+        <div class="p-item">Everything in SaaS plan</div>
+        <button class="p-cta" onclick="openModal()">Get started</button>
+      </div>
+      <div class="p-card">
+        <div class="p-tier">Enterprise Fleet</div>
+        <div class="p-price">$50–250K</div>
+        <div class="p-unit">per year · annual contract</div>
+        <div class="p-item">GCs running 10+ projects</div>
+        <div class="p-item">Dedicated infrastructure + SLA</div>
+        <div class="p-item">White-glove onboarding</div>
+        <div class="p-item">Custom memory layer training</div>
+        <div class="p-item">Suffolk Technologies target</div>
+        <div class="p-item">Priority Voice AI dispatch</div>
+        <button class="p-cta" onclick="openModal()">Contact sales</button>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section class="cta-section">
+  <div class="cta-glow"></div>
+  <h2>Stop chasing.<br>Start building.</h2>
+  <p>Relay AI activates in 10 minutes. First Voice AI call fires at 9:02 AM tomorrow.<br>First brief lands this Friday at 4 PM. No sales call required.</p>
+  <div class="cta-btns">
+    <button class="cta-main" onclick="openModal()">
+      <svg width="14" height="14" viewBox="0 0 14 14" fill="none"><path d="M2 2l10 5-10 5V2z" fill="#fff"/></svg>
+      Get started free
+    </button>
+    <button class="cta-ghost">Book a demo instead</button>
+  </div>
+  <div style="font-size:11px;color:#2a3e58;margin-top:14px;position:relative">Ahmad Sous · Founder & CEO · ahmadsous4@gmail.com · Backed by Suffolk Technologies</div>
+</section>
+
+<!-- FOOTER -->
+<div class="footer">
+  <div class="foot-inner">
+    <div class="foot-logo">
+      <div class="logo-mark" style="width:22px;height:22px;border-radius:5px"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 4-8 4V1z" fill="#fff"/></svg></div>
+      Relay<span style="color:var(--green)">AI</span>
+    </div>
+    <div class="foot-links">
+      <div class="foot-link">Product</div>
+      <div class="foot-link">How it works</div>
+      <div class="foot-link">Pricing</div>
+      <div class="foot-link">About</div>
+      <div class="foot-link">Privacy</div>
+      <div class="foot-link">Terms</div>
+    </div>
+    <div class="foot-copy">© 2026 Relay AI · All rights reserved</div>
+  </div>
+</div>
+
+<!-- ONBOARDING MODAL -->
+<div class="modal-overlay" id="modal">
+  <div class="modal">
+    <div class="modal-header">
+      <div class="modal-title">
+        <div class="logo-mark" style="width:24px;height:24px;border-radius:5px"><svg width="10" height="10" viewBox="0 0 10 10" fill="none"><path d="M1 1l8 4-8 4V1z" fill="#fff"/></svg></div>
+        Set up Relay AI
+      </div>
+      <button class="modal-close" onclick="closeModal()">✕</button>
+    </div>
+    <div class="modal-progress">
+      <div class="prog-steps">
+        <div class="ps curr" id="ps-1"><div class="ps-dot curr" id="pd-1">1</div><div class="ps-lbl">You</div></div>
+        <div class="ps-line" id="pl-1"></div>
+        <div class="ps" id="ps-2"><div class="ps-dot" id="pd-2">2</div><div class="ps-lbl">Projects</div></div>
+        <div class="ps-line" id="pl-2"></div>
+        <div class="ps" id="ps-3"><div class="ps-dot" id="pd-3">3</div><div class="ps-lbl">Agencies</div></div>
+        <div class="ps-line" id="pl-3"></div>
+        <div class="ps" id="ps-4"><div class="ps-dot" id="pd-4">4</div><div class="ps-lbl">Blockers</div></div>
+        <div class="ps-line" id="pl-4"></div>
+        <div class="ps" id="ps-5"><div class="ps-dot" id="pd-5">5</div><div class="ps-lbl">Mode</div></div>
+        <div class="ps-line" id="pl-5"></div>
+        <div class="ps" id="ps-6"><div class="ps-dot" id="pd-6">6</div><div class="ps-lbl">Launch</div></div>
+      </div>
+    </div>
+    <div class="modal-body">
+
+      <!-- STEP 1: YOU -->
+      <div class="modal-step active" id="ms-1">
+        <div class="step-h">Let's get you set up.</div>
+        <div class="step-sub">Takes about 10 minutes. Agents activate immediately after step 6. No demo call, no waiting.</div>
+        <div class="fg2">
+          <div class="field"><div class="fl">First name</div><input class="fi" placeholder="Ahmad"></div>
+          <div class="field"><div class="fl">Last name</div><input class="fi" placeholder="Sous"></div>
+        </div>
+        <div class="field"><div class="fl">Work email</div><input class="fi" type="email" placeholder="ahmad@yourcompany.com"></div>
+        <div class="field"><div class="fl">Company / entity name</div><input class="fi" placeholder="Sous Development LLC"></div>
+        <div class="field"><div class="fl">Your role</div>
+          <select class="fi"><option>Developer / Owner</option><option>GC / Builder</option><option>Project Manager</option><option>Principal</option><option>Other</option></select>
+        </div>
+        <div class="field"><div class="fl">How did you hear about Relay AI?</div>
+          <select class="fi"><option>Suffolk Technologies</option><option>LinkedIn</option><option>Referral</option><option>Google</option><option>Other</option></select>
+        </div>
+      </div>
+
+      <!-- STEP 2: PROJECTS -->
+      <div class="modal-step" id="ms-2">
+        <div class="step-h">Tell us about your projects.</div>
+        <div class="step-sub">The more detail you give here, the faster agents can take action. You can add more projects after setup.</div>
+        <div class="info-pill"><strong>Why we ask:</strong> Relay AI builds a memory layer per unit — address, phase, inspection status, and stakeholders. This is what lets agents take the right action on the right unit automatically.</div>
+        <div class="fg2">
+          <div class="field"><div class="fl">Subdivision name</div><input class="fi" placeholder="Lakewood Commons"></div>
+          <div class="field"><div class="fl">City / County</div><input class="fi" placeholder="Tampa, Hillsborough County FL"></div>
+        </div>
+        <div class="fg3">
+          <div class="field"><div class="fl">Total units</div><input class="fi" type="number" placeholder="84"></div>
+          <div class="field"><div class="fl">Active units</div><input class="fi" type="number" placeholder="42"></div>
+          <div class="field"><div class="fl">Target finish</div><input class="fi" placeholder="Q4 2026"></div>
+        </div>
+        <div class="field"><div class="fl">Current phase(s) <div class="fl-why">— select all that apply</div></div>
+          <div class="tag-row">
+            <div class="ttag on" onclick="this.classList.toggle('on')">Entitlement</div>
+            <div class="ttag" onclick="this.classList.toggle('on')">Permitting</div>
+            <div class="ttag" onclick="this.classList.toggle('on')">Inspections</div>
+            <div class="ttag" onclick="this.classList.toggle('on')">CO / Closeout</div>
+            <div class="ttag" onclick="this.classList.toggle('on')">Mixed</div>
+          </div>
+        </div>
+        <div class="field"><div class="fl">Upload address/lot list <div class="fl-why">— CSV, Excel, or paste</div></div>
+          <div class="upload-area" onclick="this.classList.add('done');this.innerHTML='<div style=\'color:var(--green);font-weight:600;font-size:12px\'>✓ File uploaded · 42 units detected</div>'">
+            <div style="font-size:11px;color:var(--muted)">Drop CSV here or click to upload</div>
+            <div style="font-size:10px;color:#2a3e58;margin-top:3px">Format: address, lot number — one per row</div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:8px;margin-top:6px"><div style="flex:1;height:1px;background:#0d1a2e"></div><span style="font-size:10px;color:#2a3e58">Adding more subdivisions?</span><div style="flex:1;height:1px;background:#0d1a2e"></div></div>
+        <button style="width:100%;margin-top:8px;padding:8px;background:rgba(255,255,255,0.02);border:1px dashed #1e2e44;border-radius:5px;color:var(--muted);font-size:11px;cursor:pointer">+ Add another subdivision</button>
+      </div>
+
+      <!-- STEP 3: AGENCIES -->
+      <div class="modal-step" id="ms-3">
+        <div class="step-h">Which agencies are you dealing with?</div>
+        <div class="step-sub">Enter what you know. Agent 03 Voice AI fills in the rest from call outcomes — reviewer names, response times, and best contact methods build automatically.</div>
+        <div class="info-pill"><strong>PermitFlow asks you to book a call.</strong> We ask for one phone number and start calling on your behalf by tomorrow morning.</div>
+        <div class="chk-row on" onclick="this.classList.toggle('on')">
+          <div class="chkbox">✓</div>
+          <div class="chk-txt"><strong>Utility company (will-serve letters)</strong> — e.g. TECO, Duke, FPL<br>
+            <input class="fi" style="margin-top:6px" placeholder="Agency name + main phone number">
+            <input class="fi" style="margin-top:5px" placeholder="Contact name (if you have one)">
+            <input class="fi" style="margin-top:5px" placeholder="Notes: e.g. responds faster by phone, best time 9–10 AM">
+          </div>
+        </div>
+        <div class="chk-row on" onclick="this.classList.toggle('on')" style="margin-top:8px">
+          <div class="chkbox">✓</div>
+          <div class="chk-txt"><strong>County Planning Department</strong><br>
+            <input class="fi" style="margin-top:6px" placeholder="Planning dept phone + portal URL">
+            <input class="fi" style="margin-top:5px" placeholder="Notes: e.g. agenda posts Fridays, deadline Thursday EOD">
+          </div>
+        </div>
+        <div class="chk-row" onclick="this.classList.toggle('on')" style="margin-top:8px">
+          <div class="chkbox"></div>
+          <div class="chk-txt"><strong>Building / Permits office</strong><br>
+            <input class="fi" style="margin-top:6px" placeholder="Portal URL or phone number">
+          </div>
+        </div>
+        <div class="chk-row" onclick="this.classList.toggle('on')" style="margin-top:8px">
+          <div class="chkbox"></div>
+          <div class="chk-txt"><strong>Fire department / Fire marshal</strong><br>
+            <input class="fi" style="margin-top:6px" placeholder="Dept phone + reviewer name if known">
+          </div>
+        </div>
+        <div class="chk-row" onclick="this.classList.toggle('on')" style="margin-top:8px">
+          <div class="chkbox"></div>
+          <div class="chk-txt"><strong>Environmental agency</strong>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 4: BLOCKERS -->
+      <div class="modal-step" id="ms-4">
+        <div class="step-h">What's blocking you right now?</div>
+        <div class="step-sub">This is the most valuable thing you can tell us. Agent 03 reads this and queues the first Voice AI call for tomorrow morning.</div>
+        <div class="info-pill"><strong>This is what PermitFlow doesn't ask.</strong> They book you a sales call. We start acting on your biggest problem tomorrow.</div>
+        <div class="field"><div class="fl">Biggest blocker right now <div class="fl-why">— plain English is fine</div></div>
+          <textarea class="fi" rows="3" placeholder="e.g. TECO hasn't responded to will-serve in 6 weeks. Lender is holding draw. Planning hearing packet due Thursday."></textarea>
+        </div>
+        <div class="field"><div class="fl">Any deadlines in the next 30 days?</div>
+          <textarea class="fi" rows="2" placeholder="e.g. Pasco County hearing packet due May 10. Lender draw deadline May 15."></textarea>
+        </div>
+        <div class="field"><div class="fl">How far behind schedule?</div>
+          <select class="fi">
+            <option>On schedule</option>
+            <option>1–2 weeks behind</option>
+            <option>3–4 weeks behind</option>
+            <option selected>5–8 weeks behind</option>
+            <option>8+ weeks behind</option>
+          </select>
+        </div>
+        <div class="field"><div class="fl">Key contacts (paste what you have)</div>
+          <textarea class="fi" rows="3" placeholder="e.g. GC: Mike Torres 813-555-0100&#10;Lender: M. Kapoor m.kapoor@firstnational.com&#10;Architect: T. Sullivan — responds same day email"></textarea>
+        </div>
+      </div>
+
+      <!-- STEP 5: MODE -->
+      <div class="modal-step" id="ms-5">
+        <div class="step-h">How should agents operate?</div>
+        <div class="step-sub">Set the default for all units. Override per unit anytime in the platform. Most users start on Approval Gated and switch to Autonomous within a week.</div>
+        <div class="mode-cards">
+          <div class="mc" id="mc-auto" onclick="pickMC('auto')">
+            <div class="mc-top"><div class="mc-ico">🤖</div><div><div class="mc-name">Autonomous</div><div class="mc-tag">Agents act without asking · you get post-action logs</div></div><div class="mc-check"></div></div>
+            <div class="mc-desc">Best for developers who trust the system. Voice AI calls, inspection scheduling, briefs — all fire without you touching anything. Review logs at end of day.</div>
+          </div>
+          <div class="mc on" id="mc-gated" onclick="pickMC('gated')">
+            <div class="mc-top"><div class="mc-ico">✋</div><div><div class="mc-name" style="color:#7eb6ff">Approval Gated</div><div class="mc-tag" style="color:var(--green)">Recommended for new users</div></div><div class="mc-check">✓</div></div>
+            <div class="mc-desc">Agents prepare each action and show you exactly what they'll do. You approve with one tap. Perfect for getting comfortable — takes 1–2 weeks before most users go Autonomous.</div>
+          </div>
+          <div class="mc" id="mc-watch" onclick="pickMC('watch')">
+            <div class="mc-top"><div class="mc-ico">👀</div><div><div class="mc-name">Observer</div><div class="mc-tag">Read-only · agents flag, you decide</div></div><div class="mc-check"></div></div>
+            <div class="mc-desc">Relay AI surfaces blockers and recommendations. You act on them yourself. Good for teams that want to see the system working before committing to automated action.</div>
+          </div>
+        </div>
+        <div class="divider"></div>
+        <div class="fg2">
+          <div class="field"><div class="fl">Voice AI call time</div>
+            <select class="fi"><option>9:00 AM (recommended)</option><option>9:30 AM</option><option>8:00 AM</option><option>10:00 AM</option></select>
+          </div>
+          <div class="field"><div class="fl">Morning briefing time</div>
+            <select class="fi"><option>7:00 AM</option><option>7:30 AM</option><option>8:00 AM</option><option>6:30 AM</option></select>
+          </div>
+        </div>
+      </div>
+
+      <!-- STEP 6: LAUNCH -->
+      <div class="modal-step" id="ms-6">
+        <div class="launch-hero">
+          <div class="launch-icon">🚀</div>
+          <div class="launch-h">You're ready to launch.</div>
+          <div class="launch-sub">Here's exactly what activates the moment you hit go. No waiting. No demo call. No onboarding specialist.</div>
+        </div>
+        <div class="launch-items">
+          <div class="li-row"><div class="li-ico">🧠</div><div class="li-txt"><strong>Intelligence briefing</strong> — Tomorrow at 7:00 AM your first briefing arrives: what's blocked, what's critical, highest-value action.</div></div>
+          <div class="li-row"><div class="li-ico">📞</div><div class="li-txt"><strong>Agent 03 · Voice AI</strong> — Scans your blockers tonight. If TECO or any agency has been silent, first call queued for 9:02 AM tomorrow.</div></div>
+          <div class="li-row"><div class="li-ico">📋</div><div class="li-txt"><strong>Agent 01 · Entitlement</strong> — Checks for hearing deadlines in the next 14 days. If there's a packet due, it starts assembling immediately.</div></div>
+          <div class="li-row"><div class="li-ico">🔍</div><div class="li-txt"><strong>Agent 02 · Permit</strong> — Starts monitoring city portal. Any comment triggers immediate correction draft routing to your architect.</div></div>
+          <div class="li-row"><div class="li-ico">🔧</div><div class="li-txt"><strong>Agent 04 · Inspector</strong> — Reads inspection history and identifies current inspection for each unit. Ready to chain next inspection on first pass.</div></div>
+          <div class="li-row"><div class="li-ico">📨</div><div class="li-txt"><strong>Agent 05 · Stakeholder Brief</strong> — This Friday at 4:00 PM, first automated brief goes to lender, city, GC, and architect. Automatic every Friday.</div></div>
+          <div class="li-row"><div class="li-ico">✅</div><div class="li-txt"><strong>Agent 06 · CO Punchlist</strong> — Activates for any units in final phase. Starts punchlist tracking and daily vendor pings immediately.</div></div>
+        </div>
+      </div>
+
+    </div>
+    <div class="modal-footer">
+      <button class="btn-back" id="back-btn" onclick="stepBack()" style="visibility:hidden">← Back</button>
+      <div style="font-size:10px;color:#2a3e58" id="step-counter">Step 1 of 6</div>
+      <button class="btn-next" id="next-btn" onclick="stepNext()">Continue <span>→</span></button>
+    </div>
+  </div>
+</div>
+
+<script>
+let curStep=1;
+const totalSteps=6;
+
+function openModal(){document.getElementById('modal').classList.add('open');document.body.style.overflow='hidden';}
+function closeModal(){document.getElementById('modal').classList.remove('open');document.body.style.overflow='';}
+document.getElementById('modal').addEventListener('click',function(e){if(e.target===this)closeModal();});
+
+function updateStepUI(){
+  for(let i=1;i<=totalSteps;i++){
+    const ms=document.getElementById('ms-'+i);
+    if(ms)ms.classList.toggle('active',i===curStep);
+    const pd=document.getElementById('pd-'+i);
+    const ps=document.getElementById('ps-'+i);
+    if(pd){pd.classList.remove('done','curr');if(i<curStep)pd.classList.add('done');else if(i===curStep)pd.classList.add('curr');}
+    if(ps){ps.classList.remove('done','curr');if(i<curStep)ps.classList.add('done');else if(i===curStep)ps.classList.add('curr');}
+    if(i<totalSteps){const pl=document.getElementById('pl-'+i);if(pl)pl.classList.toggle('done',i<curStep);}
+  }
+  document.getElementById('step-counter').textContent='Step '+curStep+' of '+totalSteps;
+  document.getElementById('back-btn').style.visibility=curStep>1?'visible':'hidden';
+  const nb=document.getElementById('next-btn');
+  if(curStep===totalSteps){nb.className='btn-launch';nb.innerHTML='🚀 Launch Relay AI';}
+  else{nb.className='btn-next';nb.innerHTML='Continue <span>→</span>';}
+  document.querySelector('.modal-body').scrollTop=0;
+}
+
+function stepNext(){
+  if(curStep===totalSteps){launchApp();return;}
+  if(curStep<totalSteps){curStep++;updateStepUI();}
+}
+function stepBack(){if(curStep>1){curStep--;updateStepUI();}}
+
+function launchApp(){
+  const nb=document.getElementById('next-btn');
+  nb.textContent='Activating agents...';nb.disabled=true;
+  setTimeout(()=>{nb.textContent='✓ Relay AI is live!';nb.style.background='var(--green)';nb.style.color='#000';
+  setTimeout(()=>{closeModal();document.body.style.overflow='';},1200);},1600);
+}
+
+function pickMC(m){
+  ['auto','gated','watch'].forEach(k=>{
+    const el=document.getElementById('mc-'+k);
+    const chk=el.querySelector('.mc-check');
+    if(k===m){el.classList.add('on');chk.textContent='✓';}
+    else{el.classList.remove('on');chk.textContent='';}
+  });
+}
+
+function playCall(){
+  const lines=document.getElementById('call-lines');
+  const result=document.getElementById('call-result');
+  result.style.display='none';
+  const html=[
+    `<div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> Good morning. Calling re will-serve for 412 Lakewood Blvd, project Lakewood Commons.</span></div>`,
+    `<div class="vai-pline"><span class="vai-agency">TECO:</span><span class="vai-txt"> Let me pull that up... yes I see it. Assigned to D. Patel.</span></div>`,
+    `<div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> What's the expected turnaround?</span></div>`,
+    `<div class="vai-pline"><span class="vai-agency">TECO:</span><span class="vai-txt"> 3 business days. Letter goes out by Friday.</span></div>`,
+    `<div class="vai-pline"><span class="vai-relay">RELAY:</span><span class="vai-txt"> Confirmed. Logging D. Patel, 3-day ETA. Thank you.</span></div>`
+  ];
+  lines.innerHTML='';
+  let i=0;
+  const iv=setInterval(()=>{
+    if(i<html.length){lines.innerHTML+=html[i];i++;}
+    else{clearInterval(iv);result.style.display='block';}
+  },900);
+}
+</script>
