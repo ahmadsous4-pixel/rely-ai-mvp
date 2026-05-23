@@ -1,0 +1,1615 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay AI — Always-on Operations Agent</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;font-size:12px}
+body.light{--bg:#f0f2f5;--surface:#fff;--surface2:#f8f9fc;--border:#dde1e8;--border2:#edf0f5;--text:#1a2233;--text2:#374151;--muted:#6b7a96;--faint:#9ca3af;--row-hover:#f5f7fb;--curr-bg:#eff6ff;--done-color:#9ca3af;--done-line:line-through;--stat-bg:#fff}
+body.dark{--bg:#070d1a;--surface:#0d1526;--surface2:#111e35;--border:#1a2840;--border2:#1a2840;--text:#e8ecf4;--text2:#c8d0db;--muted:#6b7a96;--faint:#3a4e68;--row-hover:#1a2840;--curr-bg:rgba(26,86,219,0.1);--done-color:#2a3e58;--done-line:line-through;--stat-bg:#111e35}
+html,body{height:100%}
+.shell{display:flex;flex-direction:column;height:100vh;overflow:hidden;background:var(--bg)}
+.topbar{background:#141c28;border-bottom:1px solid #0d1520;height:48px;display:flex;align-items:center;padding:0 16px;flex-shrink:0}
+.tb-logo{display:flex;align-items:center;gap:8px;font-size:14px;font-weight:800;color:#fff;margin-right:20px;flex-shrink:0}
+.logo-mark{width:26px;height:26px;background:#1a56db;border-radius:6px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.tb-tabs{display:flex;flex:1}
+.tbt{padding:0 16px;height:48px;display:flex;align-items:center;font-size:12px;font-weight:500;color:rgba(255,255,255,0.4);cursor:pointer;border-bottom:2px solid transparent;transition:all 0.12s}
+.tbt:hover{color:rgba(255,255,255,0.75)}.tbt.on{color:#fff;border-bottom-color:#1a56db}
+.tb-right{display:flex;align-items:center;gap:10px;margin-left:auto;flex-shrink:0}
+.tbdg{padding:2px 8px;border-radius:3px;font-size:10px;font-weight:700}
+.tdg-r{background:#4d1a1a;color:#f87171;border:1px solid #7f2020}
+.tdg-o{background:#3d2a10;color:#fb923c;border:1px solid #6b4010}
+.tdg-g{background:#0f2d1a;color:#4ade80;border:1px solid #1a5c30}
+.tgl-wrap{display:flex;align-items:center;gap:5px}
+.tgl-lbl{font-size:10px;color:rgba(255,255,255,0.35);font-weight:600}
+.tgl{width:34px;height:18px;background:#1a2840;border-radius:9px;cursor:pointer;position:relative;transition:background 0.2s;border:1px solid #2a3e58;flex-shrink:0}
+.tgl.on{background:#1a56db;border-color:#1a56db}
+.tgl-knob{position:absolute;top:2px;left:2px;width:12px;height:12px;border-radius:50%;background:#fff;transition:left 0.2s}
+.tgl.on .tgl-knob{left:18px}
+.avatar{width:26px;height:26px;border-radius:50%;background:#1a56db;display:flex;align-items:center;justify-content:center;font-size:10px;color:#fff;font-weight:700}
+.ticker{background:var(--surface2);border-bottom:1px solid var(--border);padding:4px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0;height:28px;overflow:hidden}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#22c55e;animation:pp 1.5s infinite;flex-shrink:0}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:0.3}}
+.tick-items{display:flex;gap:12px;overflow:hidden;flex:1}
+.tick-item{display:flex;align-items:center;gap:4px;white-space:nowrap;font-size:10px;color:var(--muted);flex-shrink:0}
+.content{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.view{display:none;flex:1;flex-direction:column;overflow:hidden}
+.view.on{display:flex}
+.ph{background:var(--surface);border-bottom:1px solid var(--border);padding:8px 16px;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.pt{font-size:13px;font-weight:700;color:var(--text)}
+.ps{font-size:11px;color:var(--muted)}
+.bscroll{flex:1;overflow-y:auto;padding:14px;background:var(--bg)}
+.bscroll::-webkit-scrollbar{width:4px}
+.bscroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.panel{background:var(--surface);border:1px solid var(--border);border-radius:6px;overflow:hidden;margin-bottom:12px}
+.phdr{padding:7px 12px;border-bottom:1px solid var(--border);background:var(--surface2);display:flex;align-items:center;justify-content:space-between}
+.phdr-t{font-size:11px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px}
+.pbody{padding:12px}
+.g2{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.g4{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:10px}
+.sc{background:var(--stat-bg);border:1px solid var(--border);border-radius:6px;padding:12px 14px;text-align:center}
+.sv{font-size:28px;font-weight:800;line-height:1;color:var(--text)}
+.sl{font-size:10px;color:var(--muted);margin-top:3px;text-transform:uppercase;letter-spacing:0.4px}
+.sp{display:inline-flex;padding:1px 7px;border-radius:2px;font-size:10px;font-weight:600}
+.sp-ok{background:#dcfce7;color:#166534;border:1px solid #86efac}
+.sp-b{background:#dbeafe;color:#1e40af;border:1px solid #bfdbfe}
+.sp-r{background:#fee2e2;color:#991b1b;border:1px solid #fca5a5}
+.sp-y{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+body.dark .sp-ok{background:rgba(22,163,74,0.15);color:#4ade80;border-color:rgba(22,163,74,0.3)}
+body.dark .sp-b{background:rgba(26,86,219,0.15);color:#7eb6ff;border-color:rgba(26,86,219,0.3)}
+body.dark .sp-r{background:rgba(239,68,68,0.15);color:#f87171;border-color:rgba(239,68,68,0.3)}
+body.dark .sp-y{background:rgba(245,158,11,0.15);color:#fbbf24;border-color:rgba(245,158,11,0.3)}
+.ag{font-size:9px;padding:1px 5px;border-radius:2px;font-weight:700}
+.ag-i{background:#ede9fe;color:#5b21b6}.ag-d{background:#ffedd5;color:#9a3412}
+.ag-c{background:#fee2e2;color:#991b1b}.ag-r{background:#dbeafe;color:#1e40af}
+.ag-dr{background:#fef9c3;color:#854d0e}.ag-b{background:#dcfce7;color:#166534}
+.ag-w{background:#e0f2fe;color:#0369a1}.ag-sl{background:#f5f3ff;color:#6d28d9}
+body.dark .ag-i{background:rgba(124,58,237,0.2);color:#a78bfa}
+body.dark .ag-d{background:rgba(249,115,22,0.2);color:#fb923c}
+body.dark .ag-c{background:rgba(239,68,68,0.2);color:#f87171}
+body.dark .ag-r{background:rgba(26,86,219,0.2);color:#7eb6ff}
+body.dark .ag-dr{background:rgba(234,179,8,0.2);color:#fbbf24}
+body.dark .ag-b{background:rgba(22,163,74,0.2);color:#4ade80}
+body.dark .ag-w{background:rgba(14,165,233,0.2);color:#38bdf8}
+body.dark .ag-sl{background:rgba(109,40,217,0.2);color:#c4b5fd}
+.kv{display:flex;align-items:center;padding:5px 0;border-bottom:1px solid var(--border2);font-size:11px}
+.kv:last-child{border-bottom:none}
+.kk{color:var(--muted);width:150px;flex-shrink:0}.kvv{color:var(--text);flex:1}
+.agent-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;margin-bottom:8px;transition:all 0.2s}
+.agent-card.needs{border-left:3px solid #ef4444}
+.agent-card.prog{border-left:3px solid #1a56db}
+.agent-card.done{border-left:3px solid #16a34a;opacity:0.75}
+.agent-msg{font-size:12px;color:var(--text);font-weight:500;margin:5px 0 8px;line-height:1.55}
+.act-btn{padding:5px 12px;border:none;border-radius:4px;font-size:11px;font-weight:700;cursor:pointer;transition:all 0.12s;margin-right:6px;display:inline-flex;align-items:center;gap:4px}
+.btn-blue{background:#1a56db;color:#fff}.btn-blue:hover{background:#1648c0}
+.btn-ghost{background:var(--surface2);color:var(--muted);border:1px solid var(--border)}.btn-ghost:hover{color:var(--text)}
+.agent-ctrl-row{display:flex;align-items:center;gap:12px;padding:10px 12px;border-bottom:1px solid var(--border2)}
+.agent-ctrl-row:last-child{border-bottom:none}
+.agent-ctrl-row:hover{background:var(--row-hover)}
+.agent-icon{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;background:#dcfce7}
+body.dark .agent-icon{background:rgba(22,163,74,0.12)}
+.run-pill{background:#dcfce7;color:#166534;padding:2px 8px;border-radius:3px;font-size:9px;font-weight:700;border:1px solid #86efac}
+body.dark .run-pill{background:rgba(22,163,74,0.15);border-color:rgba(22,163,74,0.3);color:#4ade80}
+.lot-grid-view{display:flex;flex-direction:column;flex:1;overflow:hidden}
+.lot-scroll{flex:1;overflow-y:auto}
+.lot-scroll::-webkit-scrollbar{width:4px}
+.lot-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.lot-sec-lbl{font-size:10px;font-weight:700;text-transform:uppercase;letter-spacing:0.6px;color:var(--muted);padding:10px 16px 4px}
+.lot-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:10px;padding:0 16px 10px}
+@media(max-width:900px){.lot-grid{grid-template-columns:repeat(3,1fr)}}
+@media(max-width:600px){.lot-grid{grid-template-columns:repeat(2,1fr)}}
+.lot-card{background:var(--surface);border:1px solid var(--border);border-radius:6px;padding:12px;cursor:pointer;transition:all 0.15s;position:relative}
+.lot-card:hover{border-color:#1a56db;transform:translateY(-1px);box-shadow:0 4px 12px rgba(26,86,219,0.1)}
+.lot-card.risk{border-color:#ef4444}
+.lot-card.blocked{border-color:#ef4444;background:#fef2f2}
+body.dark .lot-card.blocked{background:rgba(239,68,68,0.05)}
+.lot-num{font-size:18px;font-weight:800;color:var(--text);line-height:1}
+.lot-plan{font-size:10px;color:var(--muted);margin-top:1px}
+.lot-phase{font-size:10px;color:var(--text2);margin:6px 0 4px;font-weight:600}
+.lot-pw{height:4px;background:var(--border);border-radius:2px;overflow:hidden;margin-bottom:4px}
+.lot-pf{height:100%;border-radius:2px;transition:width 0.4s}
+.lot-meta{display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--muted)}
+.risk-badge{position:absolute;top:7px;right:7px;font-size:9px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:2px;font-weight:700}
+.fail-badge{position:absolute;top:7px;right:7px;font-size:9px;background:#fee2e2;color:#991b1b;padding:1px 5px;border-radius:2px;font-weight:700;animation:pulse-r 1s infinite}
+@keyframes pulse-r{0%,100%{opacity:1}50%{opacity:0.5}}
+.weather-badge-card{position:absolute;top:7px;right:7px;font-size:9px;background:#fef9c3;color:#854d0e;padding:1px 5px;border-radius:2px;font-weight:700}
+.lot-detail{display:none;flex:1;flex-direction:column;overflow:hidden}
+.lot-detail.on{display:flex}
+.bc-bar{background:var(--surface);border-bottom:1px solid var(--border);padding:5px 16px;display:flex;align-items:center;gap:5px;font-size:11px;flex-shrink:0}
+.bcl{color:#1a56db;cursor:pointer}.bcl:hover{text-decoration:underline}
+.bcs{color:var(--muted)}
+.filter-row{background:var(--surface);border-bottom:1px solid var(--border);padding:6px 16px;display:flex;align-items:center;gap:6px;flex-wrap:wrap;flex-shrink:0}
+.fbtn{padding:3px 9px;border:1px solid var(--border);border-radius:3px;font-size:10px;cursor:pointer;background:var(--surface);color:var(--muted);transition:all 0.12s}
+.fbtn:hover{border-color:#1a56db;color:#1a56db}
+.fbtn.on{background:#eff6ff;border-color:#1a56db;color:#1a56db;font-weight:600}
+body.dark .fbtn.on{background:rgba(26,86,219,0.12);border-color:rgba(26,86,219,0.3);color:#7eb6ff}
+.task-wrap{flex:1;overflow-y:auto}
+.task-wrap::-webkit-scrollbar{width:3px}
+.task-wrap::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.task-row{display:flex;align-items:center;gap:8px;padding:6px 16px;border-bottom:1px solid var(--border2);font-size:11px;position:relative;cursor:pointer;transition:background 0.08s}
+.task-row:hover{background:var(--row-hover)}
+.task-row.curr-row{background:var(--curr-bg)}
+.task-row.block-row{background:#fef2f2}
+.task-row.weather-row{background:#fefce8}
+body.dark .task-row.block-row{background:rgba(239,68,68,0.06)}
+body.dark .task-row.weather-row{background:rgba(245,158,11,0.06)}
+.curr-bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:#1a56db;border-radius:0 2px 2px 0}
+.block-bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:#ef4444;border-radius:0 2px 2px 0}
+.weather-bar{position:absolute;left:0;top:0;bottom:0;width:3px;background:#f59e0b;border-radius:0 2px 2px 0}
+.task-num{font-size:9px;color:var(--faint);width:22px;text-align:right;flex-shrink:0}
+.task-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;transition:all 0.2s}
+.td-done{background:#1a56db}
+.td-curr{background:#22c55e;box-shadow:0 0 0 2px rgba(34,197,94,0.25)}
+.td-block{background:#ef4444;box-shadow:0 0 0 2px rgba(239,68,68,0.2)}
+.td-weather{background:#f59e0b}
+.td-pend{background:var(--border);border:1px solid var(--border2)}
+.task-name{flex:1;color:var(--text2);transition:all 0.15s}
+.task-name.done{color:var(--done-color);text-decoration:var(--done-line)}
+.task-name.curr{color:var(--text);font-weight:700}
+.task-name.blocked{color:#ef4444;font-weight:700}
+.task-name.weather-hold{color:#b45309;font-weight:600}
+.prog-bar{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.prog-fill{height:100%;background:linear-gradient(90deg,#1a56db,#3b82f6);border-radius:2px;transition:width 0.4s}
+.stbar{background:var(--surface);border-top:1px solid var(--border);padding:4px 16px;display:flex;align-items:center;justify-content:space-between;font-size:10px;color:var(--faint);flex-shrink:0}
+.vendor-wrap{flex:1;display:flex;overflow:hidden}
+.vendor-list{width:220px;border-right:1px solid var(--border);flex-shrink:0;overflow-y:auto;background:var(--surface)}
+.vendor-item{display:flex;align-items:center;gap:10px;padding:10px 14px;border-bottom:1px solid var(--border);cursor:pointer;transition:background 0.08s}
+.vendor-item:hover{background:var(--row-hover)}
+.vendor-item.on{background:var(--curr-bg);border-right:2px solid #1a56db}
+.v-avatar{width:32px;height:32px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;color:#fff;flex-shrink:0}
+.v-name{font-size:12px;font-weight:600;color:var(--text)}
+.v-trade{font-size:10px;color:var(--muted);margin-top:1px}
+.v-pane{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.v-empty{flex:1;display:flex;align-items:center;justify-content:center;color:var(--faint);font-size:12px}
+.chat-area{flex:1;overflow-y:auto;padding:14px;display:flex;flex-direction:column;gap:8px}
+.msg-bubble{max-width:75%;padding:8px 11px;border-radius:8px;font-size:11px;line-height:1.6}
+.msg-in{background:var(--surface2);border:1px solid var(--border);color:var(--text);align-self:flex-start;border-radius:4px 12px 12px 4px}
+.msg-out{background:#1a56db;color:#fff;align-self:flex-end;border-radius:12px 4px 4px 12px}
+.chat-input-row{padding:10px 14px;border-top:1px solid var(--border);display:flex;gap:8px;flex-shrink:0;background:var(--surface)}
+.chat-input{flex:1;background:var(--surface2);border:1px solid var(--border);border-radius:5px;padding:7px 10px;font-size:11px;color:var(--text);outline:none}
+.chat-input:focus{border-color:#1a56db}
+.send-btn{padding:7px 14px;background:#1a56db;border:none;border-radius:5px;color:#fff;font-size:11px;font-weight:700;cursor:pointer}
+.toast{position:fixed;bottom:20px;left:50%;transform:translateX(-50%) translateY(60px);background:#1a2233;color:#e8ecf4;padding:10px 18px;border-radius:8px;font-size:12px;font-weight:600;border:1px solid #2a3e58;z-index:1000;transition:transform 0.3s;white-space:nowrap;display:flex;align-items:center;gap:8px;box-shadow:0 8px 24px rgba(0,0,0,0.3)}
+.toast.show{transform:translateX(-50%) translateY(0)}
+.agent-feed-row{display:flex;align-items:center;gap:8px;padding:6px 10px;background:var(--surface2);border:1px solid var(--border);border-radius:5px;font-size:11px;margin-bottom:4px;transition:all 0.2s}
+.agent-feed-row:last-child{margin-bottom:0}
+.agent-feed-row.new{background:var(--curr-bg);border-color:var(--curr-border,#bfdbfe);animation:slide-in 0.35s ease}
+.aft{flex:1;color:var(--text2)}.aftm{font-size:9px;color:var(--faint);flex-shrink:0}
+.afr{font-size:9px;font-weight:600;flex-shrink:0}
+.rd{color:#16a34a}.ra{color:#1a56db}.rw{color:#f59e0b}
+@keyframes slide-in{from{opacity:0;transform:translateY(-5px)}to{opacity:1;transform:translateY(0)}}
+.just-advanced{animation:flash-in 0.7s ease-out}
+/* FEATURED VOICE AI CARD */
+.vai-featured-card{background:linear-gradient(135deg,rgba(22,163,74,0.06),rgba(26,86,219,0.04));border:1px solid #86efac;border-left:4px solid #22c55e;border-radius:6px;padding:14px;margin-bottom:10px;position:relative;overflow:hidden}
+body.dark .vai-featured-card{background:linear-gradient(135deg,rgba(22,163,74,0.08),rgba(26,86,219,0.06));border-color:rgba(22,163,74,0.3);border-left-color:#22c55e}
+.vai-featured-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,#22c55e,#1a56db)}
+.vai-fc-top{display:flex;align-items:center;gap:8px;margin-bottom:8px}
+.vai-fc-icon{width:30px;height:30px;background:#dcfce7;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0}
+body.dark .vai-fc-icon{background:rgba(22,163,74,0.15)}
+.vai-fc-title{font-size:13px;font-weight:800;color:var(--text);flex:1}
+.vai-fc-amount{font-size:20px;font-weight:800;color:#16a34a;flex-shrink:0}
+.vai-fc-meta{font-size:10px;color:var(--muted);margin-bottom:8px;line-height:1.6}
+.vai-fc-outcome{font-size:12px;font-weight:600;color:var(--text2);background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:6px 10px;margin-bottom:8px;line-height:1.5}
+.vai-fc-footer{display:flex;align-items:center;justify-content:space-between}
+.vai-fc-badge{font-size:9px;font-weight:700;background:#dcfce7;color:#166534;padding:2px 8px;border-radius:3px;border:1px solid #86efac}
+body.dark .vai-fc-badge{background:rgba(22,163,74,0.15);border-color:rgba(22,163,74,0.3);color:#4ade80}
+.vai-fc-link{font-size:10px;font-weight:700;color:#1a56db;cursor:pointer;text-decoration:none}
+.vai-fc-link:hover{text-decoration:underline}
+@keyframes flash-red{0%{background:rgba(239,68,68,0.25)}100%{background:rgba(239,68,68,0.06)}}
+.just-blocked{animation:flash-red 0.7s ease-out}
+@keyframes slide-in{from{opacity:0;transform:translateY(-8px)}to{opacity:1;transform:translateY(0)}}
+.slide-in{animation:slide-in 0.3s ease-out}
+/* VOICE AI */
+.vai-grid{display:grid;grid-template-columns:58% 42%;gap:12px;margin-bottom:12px}
+.vai-status{display:flex;align-items:center;gap:8px;padding:10px 14px;background:rgba(26,86,219,0.04);border-bottom:1px solid var(--border)}
+.vai-pill{padding:2px 10px;border-radius:10px;font-size:10px;font-weight:700}
+.vai-pill.idle{background:#f3f4f6;color:#6b7a96;border:1px solid #e5e7eb}
+.vai-pill.live{background:#dcfce7;color:#166534;border:1px solid #86efac;animation:pp 1s infinite}
+.vai-pill.queued{background:#fef9c3;color:#854d0e;border:1px solid #fde047}
+.vai-stats{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border)}
+.vai-stat{background:var(--surface);padding:10px 8px;text-align:center}
+.vai-sv{font-size:18px;font-weight:800;line-height:1;color:var(--text)}
+.vai-sl{font-size:9px;color:var(--muted);margin-top:2px;text-transform:uppercase;letter-spacing:0.3px}
+.vai-queue{padding:10px 14px}
+.vai-q-title{font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:8px}
+.vai-q-row{display:flex;align-items:center;gap:8px;padding:6px 0;border-bottom:1px solid var(--border2);font-size:11px}
+.vai-q-row:last-child{border-bottom:none}
+.vai-q-time{font-size:9px;color:var(--faint);flex-shrink:0;width:60px}
+.vai-q-agency{font-size:11px;font-weight:600;color:var(--text);flex:1}
+.vai-q-lot{font-size:9px;color:var(--muted);flex-shrink:0}
+.call-log-row{display:flex;align-items:center;gap:10px;padding:9px 14px;border-bottom:1px solid var(--border2);cursor:pointer;transition:background 0.08s}
+.call-log-row:last-child{border-bottom:none}
+.call-log-row:hover{background:var(--row-hover)}
+.call-log-row:hover .call-drill{opacity:1}
+.call-status-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.call-agency{font-size:12px;font-weight:600;color:var(--text);flex:1}
+.call-meta{font-size:10px;color:var(--muted)}
+.call-outcome{font-size:11px;color:var(--text2);margin-top:2px}
+.call-saved{font-size:11px;font-weight:700;color:#16a34a;flex-shrink:0;text-align:right}
+.call-drill{font-size:10px;color:#1a56db;flex-shrink:0;opacity:0;transition:opacity 0.15s}
+/* TRANSCRIPT VIEW */
+.tx-view{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.tx-header{background:var(--surface);border-bottom:1px solid var(--border);padding:10px 16px;flex-shrink:0}
+.tx-bc{display:flex;align-items:center;gap:5px;font-size:11px;margin-bottom:8px}
+.tx-bcl{color:#1a56db;cursor:pointer}.tx-bcl:hover{text-decoration:underline}
+.tx-bcs{color:var(--muted)}
+.tx-meta{display:flex;align-items:flex-start;gap:16px;flex-wrap:wrap}
+.tx-agency{font-size:16px;font-weight:800;color:var(--text);margin-bottom:2px}
+.tx-sub{font-size:11px;color:var(--muted)}
+.tx-outcome-box{background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:8px 14px;margin-left:auto;text-align:right;flex-shrink:0}
+.tx-outcome-val{font-size:18px;font-weight:800;color:#16a34a;line-height:1}
+.tx-outcome-lbl{font-size:9px;color:#6b7a96;text-transform:uppercase;letter-spacing:0.3px;margin-top:2px}
+.tx-scroll{flex:1;overflow-y:auto;padding:16px;background:var(--bg)}
+.tx-scroll::-webkit-scrollbar{width:4px}
+.tx-scroll::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.tx-line{display:flex;gap:10px;margin-bottom:10px;align-items:flex-start}
+.tx-time{font-size:9px;color:var(--faint);width:64px;flex-shrink:0;margin-top:3px;text-align:right}
+.tx-bubble{padding:7px 12px;border-radius:8px;font-size:11px;line-height:1.6;max-width:75%}
+.tx-relay{background:#1a56db;color:#fff;border-radius:4px 12px 12px 4px}
+.tx-agency-b{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:12px 4px 4px 12px}
+.tx-system{background:var(--surface2);border:1px solid var(--border2);color:var(--muted);border-radius:6px;font-size:10px;font-style:italic;max-width:100%}
+.tx-speaker{font-size:9px;font-weight:700;color:var(--muted);margin-bottom:2px}
+/* LIVE CALL MODAL */
+.call-modal-overlay{position:fixed;inset:0;background:rgba(0,0,0,0.7);z-index:100;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity 0.2s}
+.call-modal-overlay.show{opacity:1;pointer-events:all}
+.call-modal{background:var(--surface);border-radius:10px;width:520px;max-width:95vw;overflow:hidden;box-shadow:0 20px 60px rgba(0,0,0,0.4);transform:translateY(10px);transition:transform 0.2s}
+.call-modal-overlay.show .call-modal{transform:translateY(0)}
+.call-modal-header{background:#141c28;padding:14px 18px;display:flex;align-items:center;gap:10px}
+.call-modal-title{font-size:13px;font-weight:700;color:#fff;flex:1}
+.call-pulse{width:10px;height:10px;border-radius:50%;background:#22c55e;animation:pp 0.8s infinite;flex-shrink:0}
+.call-modal-body{padding:16px}
+.call-info-row{display:flex;gap:8px;margin-bottom:12px;flex-wrap:wrap}
+.call-info-pill{background:var(--surface2);border:1px solid var(--border);border-radius:4px;padding:4px 10px;font-size:10px;color:var(--text2)}
+.call-tx-area{background:var(--bg);border:1px solid var(--border);border-radius:6px;padding:12px;height:240px;overflow-y:auto;display:flex;flex-direction:column;gap:8px;margin-bottom:12px}
+.call-tx-area::-webkit-scrollbar{width:3px}
+.call-tx-area::-webkit-scrollbar-thumb{background:var(--border);border-radius:2px}
+.ctx-line{display:flex;gap:8px;align-items:flex-start;animation:slide-in 0.3s ease}
+.ctx-time{font-size:9px;color:var(--faint);flex-shrink:0;margin-top:3px;width:52px;text-align:right}
+.ctx-bubble{padding:6px 10px;border-radius:6px;font-size:11px;line-height:1.55;max-width:80%}
+.ctx-relay{background:#1a56db;color:#fff;border-radius:4px 10px 10px 4px}
+.ctx-agency{background:var(--surface);border:1px solid var(--border);color:var(--text);border-radius:10px 4px 4px 10px}
+.ctx-system{background:transparent;border:none;color:var(--muted);font-style:italic;font-size:10px}
+.ctx-speaker{font-size:8px;font-weight:700;color:var(--muted);margin-bottom:2px}
+.call-outcome-banner{background:#f0fdf4;border:1px solid #86efac;border-radius:6px;padding:10px 14px;display:none;align-items:center;gap:10px;margin-bottom:10px}
+body.dark .call-outcome-banner{background:rgba(22,163,74,0.1);border-color:rgba(22,163,74,0.3)}
+.call-outcome-banner.show{display:flex}
+.call-outcome-text{flex:1;font-size:12px;font-weight:600;color:#166534}
+body.dark .call-outcome-text{color:#4ade80}
+.call-outcome-amt{font-size:20px;font-weight:800;color:#16a34a}
+.call-status-row{display:flex;align-items:center;justify-content:space-between}
+.call-status-txt{font-size:11px;color:var(--muted)}
+.call-elapsed{font-size:11px;font-weight:700;color:var(--text);font-variant-numeric:tabular-nums}
+.call-close-btn{padding:6px 14px;background:var(--surface2);border:1px solid var(--border);border-radius:4px;font-size:11px;font-weight:600;cursor:pointer;color:var(--muted)}
+.call-close-btn:hover{color:var(--text)}
+</style>
+</head>
+<body class="light">
+
+<div class="shell">
+<div class="topbar">
+  <div class="tb-logo">
+    <div class="logo-mark"><svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M1.5 1.5l9 4.5-9 4.5V1.5z" fill="#fff"/></svg></div>
+    <div>
+      <div>Relay<span style="color:#00c48c">AI</span></div>
+      <div style="font-size:8px;color:rgba(255,255,255,0.3);font-weight:400">Always-on Operations Agent</div>
+    </div>
+  </div>
+  <div class="tb-tabs">
+    <div class="tbt on" id="tbt-inbox" onclick="navTo('inbox',this)">Inbox</div>
+    <div class="tbt" id="tbt-agents" onclick="navTo('agents',this)">Agents</div>
+    <div class="tbt" id="tbt-site" onclick="navTo('site',this)">Site</div>
+    <div class="tbt" id="tbt-vendors" onclick="navTo('vendors',this)">Vendors</div>
+  </div>
+  <div class="tb-right">
+    <span class="tbdg tdg-r" id="badge-risk">1 At Risk</span>
+    <span class="tbdg tdg-o">2 Decisions needed</span>
+    <span class="tbdg tdg-g">8 Running</span>
+    <div class="tgl-wrap">
+      <span class="tgl-lbl">Light</span>
+      <div class="tgl" id="theme-tgl" onclick="toggleTheme()"><div class="tgl-knob"></div></div>
+      <span class="tgl-lbl">Dark</span>
+    </div>
+    <div class="avatar">AS</div>
+  </div>
+</div>
+
+<div class="ticker">
+  <div class="live-dot"></div>
+  <span style="font-size:10px;font-weight:700;color:#22c55e;flex-shrink:0">LIVE</span>
+  <div class="tick-items">
+    <div class="tick-item"><span class="ag ag-i">Inspection</span> reading Pasco County permit feed · Tampa</div>
+    <div class="tick-item" style="color:var(--border)">·</div>
+    <div class="tick-item"><span class="ag ag-c">Compliance</span> reconciling lien-waiver dates · Maple Ridge</div>
+    <div class="tick-item" style="color:var(--border)">·</div>
+    <div class="tick-item"><span class="ag ag-dr">Draw</span> matching waivers to May package</div>
+    <div class="tick-item" style="color:var(--border)">·</div>
+    <div class="tick-item"><span class="ag ag-w">Weather</span> pour-window risk Lots 20–21 · Tampa</div>
+    <div class="tick-item" style="color:var(--border)">·</div>
+    <div class="tick-item"><span class="ag ag-sl">Voice AI</span> queued → DTE Energy · Oakland County · Tomorrow 9am</div>
+  </div>
+</div>
+
+<div class="content">
+
+<!-- INBOX -->
+<div class="view on" id="view-inbox">
+  <div class="ph">
+    <div>
+      <div class="pt" style="font-size:20px;font-weight:800">Saturday, May 9</div>
+      <div class="ps">Autopilot active · next sweep 11:00am · Maple Ridge Phase 2</div>
+    </div>
+    <div style="margin-left:auto;display:flex;gap:8px;align-items:center">
+      <div class="g4" style="gap:8px">
+        <div class="sc" style="padding:8px 12px"><div class="sv">24</div><div class="sl">Lots</div></div>
+        <div class="sc" style="padding:8px 12px"><div class="sv" style="color:#ef4444" id="at-risk-count">1</div><div class="sl">At Risk</div></div>
+        <div class="sc" style="padding:8px 12px"><div class="sv" style="color:#f59e0b">2</div><div class="sl">Decisions needed</div></div>
+        <div class="sc" style="padding:8px 12px"><div class="sv" style="color:#1a56db">9</div><div class="sl">Vendors</div></div>
+      </div>
+      <button class="act-btn btn-blue" style="margin-left:8px">+ Run weekly dispatch</button>
+    </div>
+  </div>
+  <div class="bscroll">
+    <div class="g2">
+      <div>
+        <div class="panel">
+          <div class="phdr"><div class="phdr-t">Agent activity</div><span style="font-size:10px;color:var(--muted)">7 threads handled · 2 decisions needed</span></div>
+          <div style="padding:10px" id="agent-activity-feed">
+
+            <!-- FEATURED VOICE AI CARD — always first, most important event -->
+            <div class="vai-featured-card">
+              <div class="vai-fc-top">
+                <div class="vai-fc-icon">🎙</div>
+                <div>
+                  <div class="vai-fc-title">Relay AI called TECO Energy · Will-Serve confirmed</div>
+                  <div style="font-size:9px;color:var(--muted)">Today · 9:02 AM · 9 min 14 sec · D. Patel · Will-Serve Dept · Lot #1</div>
+                </div>
+                <div class="vai-fc-amount">$30,000</div>
+              </div>
+              <div class="vai-fc-outcome">"Will-serve confirmed for 412 Lakewood Blvd. Letter going out Friday May 9. Reviewed by D. Patel — assigned and in queue."</div>
+              <div class="vai-fc-footer">
+                <div style="display:flex;gap:6px;align-items:center">
+                  <span class="vai-fc-badge">✓ DRAW GATE CLEARED</span>
+                  <span style="font-size:9px;color:var(--muted)">Lender notified · 14 days of delay prevented</span>
+                </div>
+                <span class="vai-fc-link" onclick="navTo('agents',document.getElementById('tbt-agents'));setTimeout(()=>openTranscript('call-001'),300)">View full transcript →</span>
+              </div>
+            </div>
+            <div class="agent-card needs">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="ag ag-b">BUYER AGENT</span><span style="font-size:9px;color:var(--muted)">9:11 AM</span></div>
+              <div class="agent-msg">Buyer Nguyen requested cabinet upgrade on Lot #11 — CO drafted, needs your approval.</div>
+              <button class="act-btn btn-blue" onclick="this.textContent='✓ Sent';this.disabled=true">Send CO to buyer</button>
+              <span style="font-size:10px;color:var(--muted)">Buyer Agent will execute</span>
+            </div>
+            <div class="agent-card needs">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="ag ag-c">COMPLIANCE AGENT</span><span style="font-size:9px;color:var(--muted)">7:42 AM</span></div>
+              <div class="agent-msg">Riverbend Roofing COI expires 5/12 — emailed broker yesterday, no reply yet.</div>
+              <button class="act-btn btn-blue" onclick="this.textContent='✓ Calling';this.disabled=true">Yes, place a follow-up call</button>
+              <span style="font-size:10px;color:var(--muted)">Compliance Agent will execute</span>
+            </div>
+            <div class="agent-card prog" id="draw-card">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="ag ag-dr">DRAW AGENT</span><span style="font-size:9px;color:var(--muted)">8:55 AM</span></div>
+              <div class="agent-msg">May draw package: <span id="draw-count">12</span> of 18 lien waivers in. <span id="draw-remaining">6</span> vendors being chased — autopilot at 2pm.</div>
+              <span class="sp sp-b">● Agent working</span>
+            </div>
+            <div class="agent-card done">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="ag ag-w">WEATHER AGENT</span><span style="font-size:9px;color:var(--muted)">8:31 AM</span></div>
+              <div class="agent-msg">Rain 5/4–5/5 slipped Lot #18 concrete — rebooked Cascade Concrete for 5/11.</div>
+              <span class="sp sp-ok">done</span>
+            </div>
+            <div class="agent-card done">
+              <div style="display:flex;align-items:center;gap:6px;margin-bottom:4px"><span class="ag ag-r">RFI AGENT</span><span style="font-size:9px;color:var(--muted)">8:20 AM</span></div>
+              <div class="agent-msg">Architect replies to RFI-038 — window schedule confirmed for Lots 5–7. Dispatch notified.</div>
+              <span class="sp sp-ok">done</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="panel">
+          <div class="phdr"><div class="phdr-t"><span class="ag ag-sl" style="margin-right:4px">SITE LEAD</span>Orchestrator · 7 specialists on call</div><span style="font-size:9px;background:#dcfce7;color:#166534;padding:2px 7px;border-radius:3px;font-weight:700">autopilot on</span></div>
+          <div class="pbody" style="background:var(--surface2);font-size:12px;color:var(--text2);line-height:1.7;border-bottom:1px solid var(--border)">TECO will-serve call completed at 9:02 AM — $30,000 draw gate cleared. 2 decisions need your input: Riverbend COI follow-up and Lot #11 cabinet CO. Everything else is handled. Ask me anything.</div>
+          <div class="pbody">
+            <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Demo controls</div>
+            <div style="font-size:10px;color:var(--muted);margin-bottom:8px">Each button triggers a real event inside the platform</div>
+            <div style="display:flex;flex-wrap:wrap;gap:6px">
+              <button class="act-btn btn-ghost" style="font-size:10px" onclick="demoConfirm14()">📋 Inspector confirms Lot #14</button>
+              <button class="act-btn btn-ghost" style="font-size:10px" onclick="demoStorm()">🌧 Storm forecast Thursday</button>
+              <button class="act-btn btn-ghost" style="font-size:10px" onclick="demoDraw()">💰 Draw chase 2pm</button>
+              <button class="act-btn btn-ghost" style="font-size:10px;color:#ef4444;border-color:#fca5a5" onclick="demoFail15()">🚨 Lot #15 plumbing FAILED</button>
+              <button class="act-btn btn-blue" style="font-size:10px" onclick="navTo('agents',document.getElementById('tbt-agents'));setTimeout(()=>openTranscript('call-001'),300)">🎙 View TECO Voice AI call →</button>
+              <button class="act-btn" id="live-call-btn" style="font-size:10px;background:#16a34a;color:#fff;border:none" onclick="triggerLiveCall()">📞 Place live TECO call now</button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- AGENTS -->
+<div class="view" id="view-agents">
+  <div class="ph">
+    <div><div class="pt">Agent Dashboard</div><div class="ps">8 agents · Maple Ridge Phase 2 · autopilot on</div></div>
+    <div style="margin-left:auto;display:flex;gap:8px">
+      <div class="sc" style="padding:6px 12px"><div class="sv" style="font-size:16px;color:#1a56db">8</div><div class="sl">Running</div></div>
+      <div class="sc" style="padding:6px 12px"><div class="sv" style="font-size:16px;color:#22c55e">24</div><div class="sl">Lots</div></div>
+      <div class="sc" style="padding:6px 12px"><div class="sv" style="font-size:16px;color:#f59e0b">2</div><div class="sl">Decisions needed</div></div>
+      <div class="sc" style="padding:6px 12px"><div class="sv" style="font-size:16px;color:#16a34a">6</div><div class="sl">Resolved today</div></div>
+      <div class="sc" style="padding:6px 12px"><div class="sv" style="font-size:16px;color:#ef4444">$127K</div><div class="sl">Protected · May</div></div>
+    </div>
+  </div>
+  <div class="bscroll">
+
+    <!-- ROW 1: Graph + Voice AI Status side by side -->
+    <div class="vai-grid">
+
+      <!-- ORCHESTRATION GRAPH -->
+      <div class="panel" style="margin-bottom:0">
+        <div class="phdr">
+          <div class="phdr-t">Orchestration graph</div>
+          <div style="display:flex;gap:10px">
+            <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)"><div style="width:7px;height:7px;border-radius:50%;background:#1a56db"></div>Active</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)"><div style="width:7px;height:7px;border-radius:50%;background:#f59e0b"></div>Waiting</div>
+            <div style="display:flex;align-items:center;gap:4px;font-size:9px;color:var(--muted)"><div style="width:7px;height:7px;border-radius:50%;background:#d1d5db"></div>Idle</div>
+          </div>
+        </div>
+        <div style="padding:12px;display:flex;justify-content:center">
+          <svg id="og-svg" width="100%" height="300" viewBox="0 0 520 300" style="display:block"></svg>
+        </div>
+      </div>
+
+      <!-- VOICE AI STATUS PANEL -->
+      <div class="panel" style="margin-bottom:0;display:flex;flex-direction:column">
+        <div class="phdr">
+          <div class="phdr-t" style="display:flex;align-items:center;gap:6px">
+            <span>🎙</span> Voice AI Agent
+          </div>
+          <span class="vai-pill idle" id="vai-status-pill">○ IDLE</span>
+        </div>
+
+        <!-- Status block -->
+        <div class="vai-status">
+          <div style="flex:1">
+            <div style="font-size:10px;font-weight:700;color:var(--text);margin-bottom:1px" id="vai-status-line">Last call completed · Today 9:02 AM</div>
+            <div style="font-size:10px;color:var(--muted)" id="vai-next-line">Next queued → Pasco County Building Dept · Tomorrow 9:00 AM</div>
+          </div>
+        </div>
+
+        <!-- Monthly stats -->
+        <div class="vai-stats">
+          <div class="vai-stat"><div class="vai-sv" style="color:#1a56db">14</div><div class="vai-sl">Calls made</div></div>
+          <div class="vai-stat"><div class="vai-sv" style="color:#22c55e">11</div><div class="vai-sl">Connected</div></div>
+          <div class="vai-stat"><div class="vai-sv" style="color:#16a34a">52d</div><div class="vai-sl">Saved</div></div>
+          <div class="vai-stat"><div class="vai-sv" style="color:#ef4444">$127K</div><div class="vai-sl">Protected</div></div>
+        </div>
+
+        <!-- Who it calls -->
+        <div style="padding:10px 14px;border-bottom:1px solid var(--border)">
+          <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px">Who it calls on your behalf</div>
+          <div style="display:flex;flex-wrap:wrap;gap:4px">
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Utility companies</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Building dept</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Fire marshal</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Planning dept</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Lender draw dept</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Inspectors</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Insurance brokers</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Vendors</span>
+            <span style="font-size:9px;background:var(--surface2);border:1px solid var(--border);border-radius:3px;padding:2px 6px;color:var(--text2)">Suppliers</span>
+          </div>
+        </div>
+
+        <!-- Call queue -->
+        <div class="vai-queue" style="flex:1">
+          <div class="vai-q-title">Call queue — next 3</div>
+          <div class="vai-q-row"><span class="vai-q-time">Tomorrow 9am</span><div><div class="vai-q-agency">DTE Energy · Oakland County MI</div><div style="font-size:9px;color:var(--muted)">Will-serve status · Pine Cove · Commerce Township</div></div><span class="vai-q-lot" style="background:#fef9c3;color:#854d0e;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:700">QUEUED</span></div>
+          <div class="vai-q-row"><span class="vai-q-time">May 10 · 9am</span><div><div class="vai-q-agency">Pasco County Building Dept</div><div style="font-size:9px;color:var(--muted)">Permit status · Lot #22 · Tampa</div></div><span class="vai-q-lot" style="background:#fef9c3;color:#854d0e;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:700">QUEUED</span></div>
+          <div class="vai-q-row"><span class="vai-q-time">May 11 · 9am</span><div><div class="vai-q-agency">Pasco County Fire Marshal</div><div style="font-size:9px;color:var(--muted)">Plan review status · Lot #23 · Tampa</div></div><span class="vai-q-lot" style="background:#fef9c3;color:#854d0e;padding:1px 5px;border-radius:2px;font-size:9px;font-weight:700">QUEUED</span></div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ROW 2: Voice AI Call Log (full width, drill-through) -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="phdr">
+        <div class="phdr-t" style="display:flex;align-items:center;gap:6px"><span>🎙</span> Voice AI — Recent calls <span style="font-weight:400;text-transform:none;letter-spacing:0;color:var(--faint)">· click any call to view full transcript</span></div>
+        <span style="font-size:10px;color:var(--muted)">May 2025 · 14 calls · $127,400 protected</span>
+      </div>
+      <div id="vai-call-log"></div>
+    </div>
+
+    <!-- ROW 3: Live agent feed (full width) -->
+    <div class="panel" style="margin-bottom:12px">
+      <div class="phdr">
+        <div class="phdr-t">What agents are doing right now</div>
+        <div class="live-dot"></div>
+      </div>
+      <div style="padding:10px" id="agent-live-feed">
+        <div class="agent-feed-row new"><span class="ag ag-i">INSPECTION</span><div class="aft">Lot #14 framing passed — rough electrical auto-scheduled Thu 9AM, GC notified</div><span class="aftm">Just now</span><span class="afr rd">✓ done</span></div>
+        <div class="agent-feed-row"><span class="ag ag-w">WEATHER</span><div class="aft">Storm Thu 5/8 — Cascade Concrete rescheduled Lots 20–21 pour to Mon 5/12</div><span class="aftm">4m ago</span><span class="afr rd">✓ done</span></div>
+        <div class="agent-feed-row"><span class="ag ag-dr">DRAW</span><div class="aft">Chasing 6 vendors for May lien waivers — 12 of 18 in, autopilot at 2pm</div><span class="aftm">8m ago</span><span class="afr ra">● active</span></div>
+        <div class="agent-feed-row"><span class="ag ag-c">COMPLIANCE</span><div class="aft">Riverbend Roofing COI expires 5/12 — awaiting your approval to call broker</div><span class="aftm">12m ago</span><span class="afr rw">⏳ waiting</span></div>
+        <div class="agent-feed-row"><span class="ag ag-sl">SITE LEAD</span><div class="aft">Morning briefing complete · TECO call cleared $30K draw gate · 2 decisions needed from you</div><span class="aftm">7:02 AM</span><span class="afr rd">✓ sent</span></div>
+      </div>
+    </div>
+
+    <!-- ROW 4: Per-agent controls + Memory layer -->
+    <div class="g2">
+      <div class="panel"><div class="phdr"><div class="phdr-t">Per-agent controls</div></div><div id="agent-ctrl-list"></div></div>
+      <div class="panel"><div class="phdr"><div class="phdr-t">Memory layer</div><span style="font-size:10px;color:var(--muted)">Tampa · SE Michigan · compounds with every project</span></div>
+        <div class="pbody">
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:6px;padding-bottom:4px;border-bottom:1px solid var(--border2)">🌴 Tampa · Pasco County</div>
+          <div class="kv"><div class="kk">TECO Energy</div><div class="kvv">Phone: 1.4d avg · best 9–10 AM · D. Patel (Will-Serve) · (813) 228-8800</div></div>
+          <div class="kv"><div class="kk">Pasco County Building</div><div class="kvv">Portal updates Mon/Wed/Fri · reviewer M. Torres · corrections turnaround 3d</div></div>
+          <div class="kv"><div class="kk">Pasco County Planning</div><div class="kvv">Agenda posts Fridays · packet deadline Thu EOD · call Tue/Wed best</div></div>
+          <div class="kv"><div class="kk">Pasco Fire Marshal</div><div class="kvv">Plans must be fully stamped · reviewer J. Kim · call before 9 AM</div></div>
+          <div class="kv"><div class="kk">Cascade Concrete</div><div class="kvv">Prefers 7am · 5d lead time · Joe Martinez · rain delay protocol active</div></div>
+          <div class="kv"><div class="kk">Inspector R. Chen</div><div class="kvv">Electrical · Tue/Thu slots only · books 2d out · same-day phone response</div></div>
+          <div class="kv"><div class="kk">Inspector J. Davis</div><div class="kvv">Framing · 9am preferred · fast — usually same week · digital sign-off</div></div>
+          <div style="font-size:9px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin:10px 0 6px;padding-top:8px;border-top:1px solid var(--border2)">🏔 Southeast Michigan · Oakland County</div>
+          <div class="kv"><div class="kk">DTE Energy</div><div class="kvv">Phone: 1.6d avg · best 9–10 AM · M. Johnson (Will-Serve) · (800) 477-4747</div></div>
+          <div class="kv"><div class="kk">Consumers Energy</div><div class="kvv">Gas service · 5d avg phone response · call Tue–Thu for best availability</div></div>
+          <div class="kv"><div class="kk">Oakland County Building</div><div class="kvv">Plan review updates Mon/Wed/Fri · reviewer Torres · corrections 3–5d turnaround</div></div>
+          <div class="kv"><div class="kk">Commerce Township</div><div class="kvv">Zoning office closes 4 PM · call before 3 · permit dept: (248) 624-6000</div></div>
+          <div class="kv"><div class="kk">Michigan DEQ</div><div class="kvv">Wetland permits · call Tue/Wed · environmental review 10–14d avg</div></div>
+          <div class="kv"><div class="kk">Oakland County Water</div><div class="kvv">Sewer tap · water connection · 7d processing avg · inspector: M. Reeves</div></div>
+          <div class="kv"><div class="kk">Weather window</div><div class="kvv">Tampa: 5/6–5/10 clear · Michigan: 5/9–5/14 clear · next risk 5/15</div></div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- TRANSCRIPT DRILL-THROUGH VIEW -->
+<div class="view" id="view-transcript">
+  <div class="tx-view">
+    <div class="tx-header">
+      <div class="tx-bc">
+        <span class="tx-bcl" onclick="navTo('agents',document.getElementById('tbt-agents'))">Agents</span>
+        <span class="tx-bcs">›</span>
+        <span class="tx-bcl" onclick="navTo('agents',document.getElementById('tbt-agents'))">Voice AI</span>
+        <span class="tx-bcs">›</span>
+        <span id="tx-bc-name" style="color:var(--text);font-weight:600">Call transcript</span>
+        <button class="act-btn btn-ghost" style="margin-left:auto;font-size:10px" onclick="navTo('agents',document.getElementById('tbt-agents'))">← Back to Agents</button>
+      </div>
+      <div class="tx-meta">
+        <div>
+          <div class="tx-agency" id="tx-agency">—</div>
+          <div class="tx-sub" id="tx-sub">—</div>
+          <div style="display:flex;gap:12px;margin-top:6px;flex-wrap:wrap" id="tx-badges"></div>
+        </div>
+        <div class="tx-outcome-box" id="tx-outcome-box">
+          <div class="tx-outcome-val" id="tx-saved">—</div>
+          <div class="tx-outcome-lbl">Protected</div>
+        </div>
+      </div>
+    </div>
+    <div class="tx-scroll" id="tx-scroll"></div>
+  </div>
+</div>
+
+<!-- SITE -->
+<div class="view" id="view-site">
+  <div class="lot-grid-view" id="lot-grid-view">
+    <div class="ph">
+      <div><div class="pt">Maple Ridge Phase 2</div><div class="ps">4400 Maple Ridge Pkwy · Tampa, FL · target completion Nov 5</div></div>
+      <div style="margin-left:auto;display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+        <div class="sc" style="padding:6px 12px"><div style="font-size:16px;font-weight:800;color:var(--text)">24</div><div class="sl">Active lots</div></div>
+        <div class="sc" style="padding:6px 12px"><div style="font-size:16px;font-weight:800;color:#ef4444" id="site-risk">1</div><div class="sl">At risk</div></div>
+        <div class="sc" style="padding:6px 12px"><div style="font-size:16px;font-weight:800;color:var(--text)">9</div><div class="sl">Vendors</div></div>
+        <div class="sc" style="padding:6px 12px"><div style="font-size:16px;font-weight:800;color:var(--text)">180</div><div class="sl">Days to target</div></div>
+        <button class="act-btn btn-blue">+ Run dispatch agent</button>
+      </div>
+    </div>
+    <div class="lot-scroll">
+      <div class="lot-sec-lbl">CLOSING SOON · 5 lots</div><div class="lot-grid" id="grid-close"></div>
+      <div class="lot-sec-lbl">FINISHING TRADES · 6 lots</div><div class="lot-grid" id="grid-finish"></div>
+      <div class="lot-sec-lbl">MEP & INSULATION · 5 lots</div><div class="lot-grid" id="grid-mep"></div>
+      <div class="lot-sec-lbl">FRAMING & EXTERIOR · 5 lots</div><div class="lot-grid" id="grid-frame"></div>
+      <div class="lot-sec-lbl">FOUNDATION · 3 lots</div><div class="lot-grid" id="grid-found"></div>
+    </div>
+  </div>
+  <div class="lot-detail" id="lot-detail">
+    <div class="bc-bar">
+      <span class="bcl" onclick="showGrid()">Site</span>
+      <span class="bcs">›</span><span id="bc-lot" style="color:var(--text);font-weight:600">—</span>
+      <span class="bcs">›</span><span id="bc-phase" style="color:var(--muted)">Task list</span>
+      <div style="margin-left:auto;display:flex;align-items:center;gap:8px">
+        <span style="font-size:11px;color:var(--muted)" id="lot-pct-lbl">—</span>
+        <div class="prog-bar" style="width:100px"><div class="prog-fill" id="lot-prog" style="width:0%"></div></div>
+        <button class="act-btn btn-ghost" onclick="showGrid()">← Back to site</button>
+      </div>
+    </div>
+    <div class="ph" style="gap:16px">
+      <div><div class="pt" id="lot-title">—</div><div class="ps" id="lot-sub">—</div></div>
+      <div style="display:flex;gap:8px;flex-shrink:0">
+        <div class="sc" style="padding:6px 12px"><div id="stat-done" style="font-size:16px;font-weight:800;color:#1a56db">0</div><div class="sl">Done</div></div>
+        <div class="sc" style="padding:6px 12px"><div id="stat-curr" style="font-size:16px;font-weight:800;color:#22c55e">0</div><div class="sl">Agent working</div></div>
+        <div class="sc" style="padding:6px 12px"><div id="stat-rem" style="font-size:16px;font-weight:800;color:var(--text)">0</div><div class="sl">Remaining</div></div>
+      </div>
+    </div>
+    <div class="filter-row">
+      <div class="fbtn on" onclick="doFilter('all',this)">All tasks</div>
+      <div class="fbtn" onclick="doFilter('active',this)">Active</div>
+      <div class="fbtn" onclick="doFilter('inspection',this)">Inspections</div>
+      <div class="fbtn" onclick="doFilter('order',this)">Orders</div>
+      <div class="fbtn" onclick="doFilter('dispatch',this)">Dispatch</div>
+      <div class="fbtn" onclick="doFilter('weather',this)">Weather holds</div>
+      <div class="fbtn" onclick="doFilter('remaining',this)">Remaining</div>
+      <div style="margin-left:auto;font-size:10px;color:var(--muted)">Click any task to mark complete</div>
+    </div>
+    <div class="task-wrap" id="task-wrap"></div>
+    <div class="stbar"><span id="task-stleft">—</span><span>Relay AI — Always-on Operations Agent</span></div>
+  </div>
+</div>
+
+<!-- VENDORS -->
+<div class="view" id="view-vendors">
+  <div class="ph"><div class="pt">Vendor Inbox</div><div class="ps" style="margin-left:8px">Conversations with the 9 crews on this site</div></div>
+  <div class="vendor-wrap">
+    <div class="vendor-list" id="v-list"></div>
+    <div class="v-pane" id="v-pane"><div class="v-empty">Select a vendor to view conversation</div></div>
+  </div>
+</div>
+
+</div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<!-- LIVE CALL MODAL -->
+<div class="call-modal-overlay" id="call-modal-overlay">
+  <div class="call-modal">
+    <div class="call-modal-header">
+      <div class="call-pulse" id="call-pulse"></div>
+      <div class="call-modal-title" id="call-modal-title">🎙 Relay AI · Placing call to TECO Energy...</div>
+      <span class="call-elapsed" id="call-elapsed">0:00</span>
+    </div>
+    <div class="call-modal-body">
+      <div class="call-info-row">
+        <span class="call-info-pill">📍 Tampa, FL · Lot #1</span>
+        <span class="call-info-pill">📞 (813) 228-8800 · TECO Will-Serve</span>
+        <span class="call-info-pill">🎯 Will-serve letter · $450K draw blocked</span>
+      </div>
+      <div class="call-tx-area" id="call-tx-area"></div>
+      <div class="call-outcome-banner" id="call-outcome-banner">
+        <div>
+          <div class="call-outcome-text">✓ Will-serve confirmed · Letter arriving Friday · Lender notified</div>
+          <div style="font-size:10px;color:var(--muted);margin-top:2px">D. Patel · TECO Will-Serve · 14 days of delay prevented</div>
+        </div>
+        <div class="call-outcome-amt">$30,000</div>
+      </div>
+      <div class="call-status-row">
+        <div class="call-status-txt" id="call-status-txt">Dialing...</div>
+        <button class="call-close-btn" id="call-close-btn" onclick="closeCallModal()" style="display:none">Close & view transcript</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// THEME
+let dark=false;
+function toggleTheme(){
+  dark=!dark;
+  document.body.classList.toggle('dark',dark);
+  document.body.classList.toggle('light',!dark);
+  document.getElementById('theme-tgl').classList.toggle('on',dark);
+}
+
+// NAV
+function navTo(key,el){
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.querySelectorAll('.tbt').forEach(t=>t.classList.remove('on'));
+  const v=document.getElementById('view-'+key);
+  if(v)v.classList.add('on');
+  if(el)el.classList.add('on');
+  if(key==='site'){renderGrid();showGrid();}
+  if(key==='agents'){renderAgents();renderGraph();renderVoiceAILog();}
+  if(key==='vendors'){renderVendors();}
+}
+
+// TOAST
+let toastTimer=null;
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  if(toastTimer)clearTimeout(toastTimer);
+  toastTimer=setTimeout(()=>t.classList.remove('show'),3500);
+}
+
+// TASKS — 81 tasks with correct agent assignments
+const TASKS=[
+  {n:1,name:'Bldg Plans & Plot Plan',agent:'rfi'},
+  {n:2,name:'Bldg Permit & Soil Erosion Permit',agent:'comp'},
+  {n:3,name:'Order Lumber & Trusses',agent:'rfi'},
+  {n:4,name:'Order Windows & Doors',agent:'rfi'},
+  {n:5,name:'Lot Clearing & Grub',agent:'disp'},
+  {n:6,name:'Soil Erosion S/O & PortaJohn Delivery',agent:'comp'},
+  {n:7,name:'State Basement & Footings',agent:'insp'},
+  {n:8,name:'Excavation: Water Line / Sewer Tap & Insp.',agent:'insp'},
+  {n:9,name:'Order Water Tap Fee',agent:'rfi'},
+  {n:10,name:'Footings & Rebar',agent:'disp'},
+  {n:11,name:'Footings & Wall Inspection',agent:'insp'},
+  {n:12,name:'Basement Walls Poured',agent:'disp'},
+  {n:13,name:'Order Basement Steel',agent:'rfi'},
+  {n:14,name:'Dampproofing, Wall Bracing, Backfill Insp.',agent:'insp'},
+  {n:15,name:'Backfill / Pour Grade Stone Drive',agent:'weather'},
+  {n:16,name:'Garage Fill & S.O. Base Trenching',agent:'disp'},
+  {n:17,name:'Deliver Floor Lumber – Floors – Trusses',agent:'disp'},
+  {n:18,name:'Order Builder\'s Risk Insurance',agent:'draw'},
+  {n:19,name:'Framing Starts',agent:'disp'},
+  {n:20,name:'Order Windows',agent:'rfi'},
+  {n:21,name:'Deliver Windows & Doors',agent:'disp'},
+  {n:22,name:'Order Bricks',agent:'rfi'},
+  {n:23,name:'Order Fireplace & S/O-Box',agent:'rfi'},
+  {n:24,name:'Order Brick Supplies',agent:'rfi'},
+  {n:25,name:'Exterior Framing Inspection',agent:'insp'},
+  {n:26,name:'Roofing Underlayment & Shingles',agent:'disp'},
+  {n:27,name:'Order Furnace',agent:'rfi'},
+  {n:28,name:'Underground Plumbing & Inspection',agent:'insp'},
+  {n:29,name:'Rough Plumbing & Inspection',agent:'insp'},
+  {n:30,name:'Rough Mechanical & Inspection',agent:'insp'},
+  {n:31,name:'Order Electrical Service',agent:'rfi'},
+  {n:32,name:'Deliver Brick',agent:'disp'},
+  {n:33,name:'Order Brick Sand',agent:'rfi'},
+  {n:34,name:'Bricklayers Start',agent:'disp'},
+  {n:35,name:'Rough Building Inspection',agent:'insp'},
+  {n:36,name:'Insulation & Inspection',agent:'insp'},
+  {n:37,name:'Brick Clean',agent:'disp'},
+  {n:38,name:'Furnace Install and Ductwork',agent:'disp'},
+  {n:39,name:'Garage Slab & S.O. Inspection',agent:'weather'},
+  {n:40,name:'Basement Slab & Inspection',agent:'weather'},
+  {n:41,name:'Prime Painting',agent:'disp'},
+  {n:42,name:'Deliver Trim Lumber & Cabinetry',agent:'disp'},
+  {n:43,name:'Siding, Trim, and Shutters',agent:'disp'},
+  {n:44,name:'Vinyl Flooring',agent:'disp'},
+  {n:45,name:'Mantel and Surround',agent:'disp'},
+  {n:46,name:'Trim Carpentry',agent:'disp'},
+  {n:47,name:'Countertop Work',agent:'disp'},
+  {n:48,name:'Correct Tile',agent:'disp'},
+  {n:49,name:'Spot Drywall',agent:'disp'},
+  {n:50,name:'Interior Painting',agent:'disp'},
+  {n:51,name:'Deliver Lights',agent:'rfi'},
+  {n:52,name:'Final Plumbing & Inspection',agent:'insp'},
+  {n:53,name:'Final HVAC & Inspection',agent:'insp'},
+  {n:54,name:'Final Electrical & Inspection / A.V.',agent:'insp'},
+  {n:55,name:'Fireplace Start-up & Inspection',agent:'insp'},
+  {n:56,name:'Mirrors & Shower Doors',agent:'disp'},
+  {n:57,name:'Wire Shelving / Closet Shelving',agent:'disp'},
+  {n:58,name:'Pour Exterior Concrete',agent:'weather'},
+  {n:59,name:'Final Grade, Cert. & Inspection',agent:'insp'},
+  {n:60,name:'Hardwood Flooring',agent:'disp'},
+  {n:61,name:'Deliver & Install Appliances',agent:'disp'},
+  {n:62,name:'Water Meter Reader Install',agent:'comp'},
+  {n:63,name:'Sewer Tap',agent:'comp'},
+  {n:64,name:'Carpet & Pad',agent:'disp'},
+  {n:65,name:'Bonds and S&I Installation',agent:'draw'},
+  {n:66,name:'Install Garage Doors',agent:'disp'},
+  {n:67,name:'Garage Door Opener',agent:'disp'},
+  {n:68,name:'Gutters',agent:'disp'},
+  {n:69,name:'Window Caulking',agent:'disp'},
+  {n:70,name:'Sidewalks',agent:'disp'},
+  {n:71,name:'House Cleaning',agent:'disp'},
+  {n:72,name:'Touch-up Painting',agent:'disp'},
+  {n:73,name:'Window Caulk & Adjustment',agent:'disp'},
+  {n:74,name:'Final Building Inspection',agent:'insp'},
+  {n:75,name:'Set-up Closing',agent:'buyer'},
+  {n:76,name:'Final Inspection & Cert. of Occupancy',agent:'insp'},
+  {n:77,name:'Construction Walk Thru & Punchlist',agent:'buyer'},
+  {n:78,name:'Transfer Utilities (Gas, Water, Electric)',agent:'draw'},
+  {n:79,name:'Cancel Builder\'s Risk',agent:'draw'},
+  {n:80,name:'Recover Bonds',agent:'draw'},
+  {n:81,name:'Keys & Handover Complete',agent:'buyer'}
+];
+const TOTAL=TASKS.length;
+const WEATHER_TASKS=[15,39,40,58];
+const AG_CLS={insp:'ag-i',disp:'ag-d',comp:'ag-c',rfi:'ag-r',draw:'ag-dr',buyer:'ag-b',weather:'ag-w',sl:'ag-sl'};
+const AG_NM={insp:'Inspection',disp:'Dispatch',comp:'Compliance',rfi:'RFI',draw:'Draw',buyer:'Buyer',weather:'Weather',sl:'Site Lead'};
+
+// LOTS
+const LOTS=[
+  {n:1,plan:'A',phase:'Final Finish & Punch',pct:96,close:'May 23',days:14,section:'close',curr:76},
+  {n:2,plan:'B',phase:'Final Finish & Punch',pct:96,close:'May 27',days:18,section:'close',curr:76},
+  {n:3,plan:'C',phase:'Final Finish & Punch',pct:74,close:'May 31',days:22,section:'close',curr:74},
+  {n:4,plan:'A',phase:'Final Finish & Punch',pct:96,close:'Jun 6',days:28,section:'close',curr:76},
+  {n:7,plan:'A',phase:'Flooring & Cabinets',pct:68,close:'Jul 4',days:56,section:'close',curr:64},
+  {n:5,plan:'B',phase:'Interior Trim & Paint',pct:71,close:'Jun 20',days:42,section:'finish',curr:50},
+  {n:6,plan:'C',phase:'Interior Trim & Paint',pct:71,close:'Jun 27',days:49,section:'finish',curr:50},
+  {n:8,plan:'B',phase:'Drywall',pct:71,close:'Jul 8',days:60,section:'finish',curr:49},
+  {n:9,plan:'C',phase:'Interior Trim & Paint',pct:70,close:'Jul 11',days:63,section:'finish',curr:50},
+  {n:10,plan:'A',phase:'Drywall',pct:71,close:'Jul 18',days:79,section:'finish',curr:49},
+  {n:14,plan:'B',phase:'Interior Trim & Paint',pct:71,close:'Jul 18',days:79,section:'finish',risk:true,curr:50},
+  {n:11,plan:'B',phase:'MEP Rough',pct:54,close:'Aug 1',days:84,section:'mep',curr:30},
+  {n:12,plan:'C',phase:'MEP Rough',pct:54,close:'Aug 8',days:91,section:'mep',curr:30},
+  {n:13,plan:'A',phase:'MEP Rough',pct:54,close:'Aug 15',days:98,section:'mep',curr:30},
+  {n:15,plan:'C',phase:'Rough Plumbing',pct:42,close:'Aug 22',days:105,section:'mep',curr:29},
+  {n:16,plan:'A',phase:'Insulation',pct:63,close:'Aug 29',days:112,section:'mep',curr:36},
+  {n:17,plan:'B',phase:'Exterior Framing',pct:38,close:'Sep 5',days:119,section:'frame',curr:25},
+  {n:18,plan:'A',phase:'Roofing',pct:42,close:'Sep 12',days:126,section:'frame',curr:26},
+  {n:19,plan:'C',phase:'Exterior Framing',pct:38,close:'Sep 19',days:133,section:'frame',curr:25},
+  {n:20,plan:'B',phase:'Framing Starts',pct:28,close:'Sep 26',days:140,section:'frame',curr:19},
+  {n:21,plan:'A',phase:'Framing Starts',pct:28,close:'Oct 3',days:147,section:'frame',curr:19},
+  {n:22,plan:'C',phase:'Foundation',pct:18,close:'Oct 10',days:154,section:'found',curr:12},
+  {n:23,plan:'B',phase:'Foundation',pct:18,close:'Oct 17',days:161,section:'found',curr:12},
+  {n:24,plan:'A',phase:'Excavation',pct:10,close:'Oct 24',days:168,section:'found',curr:8}
+];
+
+const progCol=p=>p>=90?'#22c55e':p>=70?'#1a56db':p>=50?'#f59e0b':'#ef4444';
+let lotStates={};
+let curLot=null;
+let curFilter='all';
+let blockedLots=new Set();
+let weatherHoldLots=new Set();
+
+function calcPct(n){
+  if(lotStates[n]){const d=lotStates[n].filter(t=>t.status==='done').length;return Math.round(d/TOTAL*100);}
+  return LOTS.find(l=>l.n===n)?.pct||0;
+}
+
+function renderGrid(){
+  const secs={close:'grid-close',finish:'grid-finish',mep:'grid-mep',frame:'grid-frame',found:'grid-found'};
+  Object.keys(secs).forEach(s=>{
+    const el=document.getElementById(secs[s]);if(!el)return;
+    el.innerHTML=LOTS.filter(l=>l.section===s).map(l=>{
+      const pct=calcPct(l.n);const col=progCol(pct);
+      const isBlocked=blockedLots.has(l.n);
+      const isWeather=weatherHoldLots.has(l.n);
+      let badge='';
+      if(isBlocked)badge='<div class="fail-badge">🚨 BLOCKED</div>';
+      else if(l.risk)badge='<div class="risk-badge">4d late</div>';
+      else if(isWeather)badge='<div class="weather-badge-card">🌧 Hold</div>';
+      return`<div class="lot-card ${isBlocked?'blocked':l.risk?'risk':''}" id="lc-${l.n}" onclick="openLot(${l.n})">
+        ${badge}
+        <div class="lot-num">#${l.n}</div>
+        <div class="lot-plan">Plan ${l.plan}</div>
+        <div class="lot-phase">${l.phase}</div>
+        <div class="lot-pw"><div class="lot-pf" id="lpf-${l.n}" style="width:${pct}%;background:${col}"></div></div>
+        <div class="lot-meta"><span>close · ${l.close}</span><span style="font-weight:700;color:${col}" id="lpm-${l.n}">${pct}%</span></div>
+      </div>`;
+    }).join('');
+  });
+}
+
+function updateLotCard(n){
+  const pct=calcPct(n);const col=progCol(pct);
+  const pf=document.getElementById('lpf-'+n);const pm=document.getElementById('lpm-'+n);
+  const card=document.getElementById('lc-'+n);
+  if(pf){pf.style.width=pct+'%';pf.style.background=col;}
+  if(pm){pm.textContent=pct+'%';pm.style.color=col;}
+  if(card&&blockedLots.has(n))card.classList.add('blocked');
+}
+
+function showGrid(){
+  document.getElementById('lot-grid-view').style.display='flex';
+  document.getElementById('lot-detail').classList.remove('on');
+}
+
+function openLot(n){
+  const lot=LOTS.find(l=>l.n===n);if(!lot)return;
+  curLot=n;
+  if(!lotStates[n]){
+    lotStates[n]=TASKS.map(t=>({...t,status:t.n<lot.curr?'done':t.n===lot.curr?'curr':'pend'}));
+  }
+  document.getElementById('lot-grid-view').style.display='none';
+  document.getElementById('lot-detail').classList.add('on');
+  document.getElementById('bc-lot').textContent='Lot '+n;
+  document.getElementById('bc-phase').textContent=lot.phase;
+  document.getElementById('lot-title').textContent='Lot '+n+' — Plan '+lot.plan;
+  document.getElementById('lot-sub').textContent=lot.phase+' · close '+lot.close+' · '+lot.days+' days';
+  curFilter='all';
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  document.querySelector('.fbtn').classList.add('on');
+  refreshStats();renderTasks();
+}
+
+function refreshStats(){
+  if(!curLot||!lotStates[curLot])return;
+  const tasks=lotStates[curLot];
+  const done=tasks.filter(t=>t.status==='done').length;
+  const curr=tasks.filter(t=>t.status==='curr').length;
+  const rem=tasks.filter(t=>t.status!=='done').length;
+  const pct=Math.round(done/TOTAL*100);
+  document.getElementById('stat-done').textContent=done;
+  document.getElementById('stat-curr').textContent=curr;
+  document.getElementById('stat-rem').textContent=rem;
+  document.getElementById('lot-prog').style.width=pct+'%';
+  document.getElementById('lot-pct-lbl').textContent=pct+'% complete';
+}
+
+function renderTasks(){
+  if(!curLot||!lotStates[curLot])return;
+  const tasks=lotStates[curLot];
+  let shown=tasks;
+  if(curFilter==='active')shown=tasks.filter(t=>t.status==='curr'||t.status==='blocked');
+  if(curFilter==='inspection')shown=tasks.filter(t=>t.name.toLowerCase().includes('insp'));
+  if(curFilter==='order')shown=tasks.filter(t=>t.name.toLowerCase().startsWith('order')||t.name.toLowerCase().startsWith('deliver'));
+  if(curFilter==='dispatch')shown=tasks.filter(t=>t.agent==='disp');
+  if(curFilter==='weather')shown=tasks.filter(t=>t.status==='weather-hold');
+  if(curFilter==='remaining')shown=tasks.filter(t=>t.status!=='done');
+  document.getElementById('task-wrap').innerHTML=shown.map(t=>{
+    const isDone=t.status==='done';const isCurr=t.status==='curr';
+    const isBlock=t.status==='blocked';const isWeather=t.status==='weather-hold';
+    const dotCls=isDone?'td-done':isCurr?'td-curr':isBlock?'td-block':isWeather?'td-weather':'td-pend';
+    const nameCls=isDone?'done':isCurr?'curr':isBlock?'blocked':isWeather?'weather-hold':'';
+    const rowCls=isCurr?'curr-row':isBlock?'block-row':isWeather?'weather-row':'';
+    const barEl=isCurr?'<div class="curr-bar"></div>':isBlock?'<div class="block-bar"></div>':isWeather?'<div class="weather-bar"></div>':'';
+    const badge=isCurr?`<span class="sp sp-b" style="margin-left:4px;font-size:9px">active</span>`:
+      isBlock?`<span class="sp sp-r" style="margin-left:4px;font-size:9px">🚨 blocked</span>`:
+      isWeather?`<span class="sp sp-y" style="margin-left:4px;font-size:9px">🌧 weather hold</span>`:
+      isDone?`<span style="font-size:9px;color:var(--faint);margin-left:4px">✓</span>`:'';
+    return`<div class="task-row ${rowCls}" id="tr-${t.n}" onclick="toggleTask(${t.n})">
+      ${barEl}
+      <div class="task-num">${t.n}</div>
+      <div class="task-dot ${dotCls}"></div>
+      <div class="task-name ${nameCls}">${t.name}</div>
+      <span class="ag ${AG_CLS[t.agent]||''}">${AG_NM[t.agent]||''}</span>
+      ${badge}
+    </div>`;
+  }).join('');
+  document.getElementById('task-stleft').textContent=`Showing ${shown.length} of ${TOTAL} tasks · Lot ${curLot}`;
+}
+
+function toggleTask(taskN){
+  if(!curLot||!lotStates[curLot])return;
+  const tasks=lotStates[curLot];
+  const t=tasks.find(x=>x.n===taskN);if(!t)return;
+  if(t.status==='done'){t.status='pend';}
+  else if(t.status==='curr'){
+    t.status='done';
+    const next=tasks.find(x=>x.status==='pend');
+    if(next){
+      next.status='curr';
+      setTimeout(()=>{const el=document.getElementById('tr-'+next.n);if(el){el.classList.add('just-advanced');setTimeout(()=>el.classList.remove('just-advanced'),700);}},50);
+    }
+  } else if(t.status==='blocked'||t.status==='weather-hold'){t.status='pend';}
+  else{t.status='done';}
+  refreshStats();updateLotCard(curLot);renderTasks();
+}
+
+function doFilter(f,btn){
+  curFilter=f;
+  document.querySelectorAll('.fbtn').forEach(b=>b.classList.remove('on'));
+  btn.classList.add('on');renderTasks();
+}
+
+// DEMO CONTROLS
+function addInboxCard(agentKey,msg,type){
+  const feed=document.getElementById('agent-activity-feed');if(!feed)return;
+  const agNm={insp:'INSPECTION AGENT',weather:'WEATHER AGENT',draw:'DRAW AGENT',buyer:'BUYER AGENT',comp:'COMPLIANCE AGENT',sl:'SITE LEAD'};
+  const div=document.createElement('div');
+  div.className=`agent-card ${type} slide-in`;
+  div.innerHTML=`<div style="display:flex;align-items:center;gap:6px;margin-bottom:4px">
+    <span class="ag ${AG_CLS[agentKey]||'ag-sl'}">${agNm[agentKey]||agentKey.toUpperCase()}</span>
+    <span style="font-size:9px;color:var(--muted)">Just now</span>
+    <span style="font-size:9px;background:#dcfce7;color:#166534;padding:1px 5px;border-radius:2px;font-weight:700">LIVE</span>
+  </div><div class="agent-msg">${msg}</div>`;
+  feed.insertBefore(div,feed.firstChild);
+}
+
+function demoConfirm14(){
+  const lot=LOTS.find(l=>l.n===14);
+  if(!lotStates[14])lotStates[14]=TASKS.map(t=>({...t,status:t.n<lot.curr?'done':t.n===lot.curr?'curr':'pend'}));
+  const tasks=lotStates[14];
+  const curr=tasks.find(t=>t.status==='curr');
+  if(curr){curr.status='done';const next=tasks.find(t=>t.status==='pend');if(next)next.status='curr';}
+  addInboxCard('insp','Inspector J. Davis confirmed for Lot #14 — slot locked Thu May 8 at 9:00 AM. Task advanced. GC notified automatically.','prog');
+  showToast('📋 Lot #14 inspection confirmed · task advanced');
+  navTo('site',document.getElementById('tbt-site'));
+  setTimeout(()=>{renderGrid();openLot(14);},150);
+}
+
+function demoStorm(){
+  [20,21].forEach(lotN=>{
+    const lot=LOTS.find(l=>l.n===lotN);if(!lot)return;
+    if(!lotStates[lotN])lotStates[lotN]=TASKS.map(t=>({...t,status:t.n<lot.curr?'done':t.n===lot.curr?'curr':'pend'}));
+    lotStates[lotN].forEach(t=>{if(WEATHER_TASKS.includes(t.n)&&(t.status==='pend'||t.status==='curr'))t.status='weather-hold';});
+    weatherHoldLots.add(lotN);
+  });
+  addInboxCard('weather','Storm forecast Thursday 5/8 — pour tasks on Lots 20 and 21 marked weather hold. Cascade Concrete rescheduled to Monday 5/12 automatically.','prog');
+  showToast('🌧 Weather hold applied — Lots 20 & 21 pour tasks flagged');
+  renderGrid();
+  if(curLot===20||curLot===21)renderTasks();
+}
+
+function demoDraw(){
+  const countEl=document.getElementById('draw-count');
+  const remEl=document.getElementById('draw-remaining');
+  if(countEl){countEl.style.transition='all 0.3s';countEl.style.color='#16a34a';countEl.textContent='16';setTimeout(()=>countEl.style.color='',1000);}
+  if(remEl)remEl.textContent='2';
+  const card=document.getElementById('draw-card');
+  if(card){card.classList.add('just-advanced');setTimeout(()=>card.classList.remove('just-advanced'),700);}
+  addInboxCard('draw','Draw chase complete — 16 of 18 lien waivers now in. 2 remaining: Hammerhead Framing and Riverbend Roofing. Final chase dispatched.','prog');
+  showToast('💰 16/18 lien waivers in · 2 remaining vendors chased');
+}
+
+function demoFail15(){
+  const lot=LOTS.find(l=>l.n===15);
+  if(!lotStates[15])lotStates[15]=TASKS.map(t=>({...t,status:t.n<lot.curr?'done':t.n===lot.curr?'curr':'pend'}));
+  const tasks=lotStates[15];
+  const curr=tasks.find(t=>t.status==='curr');
+  if(curr)curr.status='blocked';
+  blockedLots.add(15);
+  const riskEl=document.getElementById('at-risk-count');
+  const siteRisk=document.getElementById('site-risk');
+  if(riskEl)riskEl.textContent=parseInt(riskEl.textContent)+1;
+  if(siteRisk)siteRisk.textContent=parseInt(siteRisk.textContent||'1')+1;
+  addInboxCard('insp','🚨 Lot #15 Rough Plumbing FAILED — inspection rebooked with Inspector P. Wong for May 9. GC notified. Lender alerted to potential draw delay.','needs');
+  showToast('🚨 Lot #15 plumbing FAILED — blocked in task list');
+  navTo('site',document.getElementById('tbt-site'));
+  setTimeout(()=>{renderGrid();openLot(15);},150);
+}
+
+// AGENTS
+const AGENT_DATA=[
+  {name:'Dispatch Agent',tag:'ag-d',icon:'🏗',desc:'sequences trades across lots',a:0,p:0,d:1},
+  {name:'Inspection Agent',tag:'ag-i',icon:'🔍',desc:'polls authority portals + rebooks',a:0,p:0,d:1},
+  {name:'Compliance Agent',tag:'ag-c',icon:'📋',desc:'COIs, W9s, lien waivers',a:0,p:1,d:0},
+  {name:'Draw Agent',tag:'ag-dr',icon:'💰',desc:'lien waivers, draw packages, bonds',a:1,p:0,d:0},
+  {name:'Buyer Agent',tag:'ag-b',icon:'🏠',desc:'selections + change orders',a:0,p:1,d:0},
+  {name:'RFI Agent',tag:'ag-r',icon:'📐',desc:'architect/engineer routing',a:1,p:0,d:0},
+  {name:'Weather Agent',tag:'ag-w',icon:'🌤',desc:'pour-window risk · reschedules on rain',a:0,p:0,d:1},
+  {name:'Site Lead',tag:'ag-sl',icon:'⭐',desc:'orchestrates all specialists',a:0,p:0,d:0}
+];
+
+function renderAgents(){
+  document.getElementById('agent-ctrl-list').innerHTML=AGENT_DATA.map(a=>`
+    <div class="agent-ctrl-row">
+      <div class="agent-icon">${a.icon}</div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:6px;margin-bottom:2px">
+          <span class="ag ${a.tag}">${a.name.toUpperCase()}</span>
+          <span class="run-pill">RUNNING</span>
+        </div>
+        <div style="font-size:11px;color:var(--muted)">${a.desc}</div>
+        <div style="display:flex;gap:10px;margin-top:4px;font-size:10px;color:var(--muted)">
+          <span>Active: <strong style="color:var(--text)">${a.a}</strong></span>
+          <span>Pending: <strong style="color:${a.p>0?'#f59e0b':'var(--text)'};">${a.p}</strong></span>
+          <span>Done: <strong style="color:var(--text)">${a.d}</strong></span>
+        </div>
+      </div>
+      <div style="display:flex;gap:4px">
+        <button class="act-btn btn-ghost" style="font-size:10px;padding:3px 8px" onclick="this.textContent=this.textContent==='pause'?'resume':'pause'">pause</button>
+        <button class="act-btn btn-ghost" style="font-size:10px;padding:3px 8px;color:#ef4444;border-color:#fca5a5">stop</button>
+      </div>
+    </div>`).join('');
+}
+
+function renderGraph(){
+  const svg=document.getElementById('og-svg');
+  if(!svg)return;
+  const CX=260,CY=150,CR=38,AR=118;
+  const AGENTS=[
+    {label:'INSPECT', icon:'🔍',l1:'Permit feeds',    l2:'+ insp. chain',    stroke:'#1a56db',fill:'#eff6ff',st:'active', angle:-90},
+    {label:'COMPLY',  icon:'📋',l1:'COIs · bonds',    l2:'· waivers',        stroke:'#f59e0b',fill:'#fefce8',st:'waiting',angle:-30},
+    {label:'RFI',     icon:'📐',l1:'Architect &',     l2:'eng. routing',     stroke:'#1a56db',fill:'#eff6ff',st:'active', angle:30},
+    {label:'DRAW',    icon:'💰',l1:'Draw packages',   l2:'· waivers',        stroke:'#1a56db',fill:'#fef9c3',st:'active', angle:90},
+    {label:'BUYER',   icon:'🏠',l1:'Selections &',    l2:'closing',          stroke:'#e5e7eb',fill:'#f9fafb',st:'idle',   angle:150},
+    {label:'WEATHER', icon:'🌤',l1:'Pour windows',    l2:'· rain reschedule',stroke:'#1a56db',fill:'#e0f2fe',st:'active', angle:210},
+    {label:'DISPATCH',icon:'🏗',l1:'Trade sequencing',l2:'· vendors',        stroke:'#1a56db',fill:'#fff7ed',st:'active', angle:270}
+  ];
+  let s='';
+  s+=`<circle cx="${CX}" cy="${CY}" r="48" fill="none" stroke="rgba(26,86,219,0.06)" stroke-width="16"><animate attributeName="r" values="44;52;44" dur="3s" repeatCount="indefinite"/><animate attributeName="opacity" values="0.3;0.6;0.3" dur="3s" repeatCount="indefinite"/></circle>`;
+  AGENTS.forEach((a,i)=>{
+    const rad=a.angle*Math.PI/180;
+    const x1=CX+CR*Math.cos(rad),y1=CY+CR*Math.sin(rad);
+    const x2=CX+(AR-34)*Math.cos(rad),y2=CY+(AR-34)*Math.sin(rad);
+    const dur=(1.8+i*0.18).toFixed(2);
+    const isAc=a.st==='active',isWt=a.st==='waiting';
+    const col=isAc?'#1a56db':isWt?'#f59e0b':'#d1d5db';
+    const sw=isAc?2:isWt?1.5:1;
+    const op=isAc?0.6:isWt?0.5:0.2;
+    if(isAc){
+      s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${sw}" opacity="${op}"><animate attributeName="opacity" values="0.2;0.7;0.2" dur="${dur}s" repeatCount="indefinite"/></line>`;
+      s+=`<circle r="3" fill="${col}" opacity="0.8"><animateMotion dur="${dur}s" repeatCount="indefinite" path="M${x1},${y1} L${x2},${y2}"/></circle>`;
+    } else if(isWt){
+      s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${sw}" opacity="${op}" stroke-dasharray="4,3"/>`;
+    } else {
+      s+=`<line x1="${x1}" y1="${y1}" x2="${x2}" y2="${y2}" stroke="${col}" stroke-width="${sw}" opacity="${op}"/>`;
+    }
+  });
+  AGENTS.forEach(a=>{
+    const rad=a.angle*Math.PI/180;
+    const ax=CX+AR*Math.cos(rad),ay=CY+AR*Math.sin(rad);
+    const bw=72,bh=62,bx=ax-bw/2,by=ay-bh/2;
+    const sl=a.st==='active'?'● ACTIVE':a.st==='waiting'?'⏳ WAIT':'○ IDLE';
+    const sf=a.st==='active'?'#dcfce7':a.st==='waiting'?'#fef9c3':'#f3f4f6';
+    const st=a.st==='active'?'#166534':a.st==='waiting'?'#854d0e':'#9ca3af';
+    s+=`<rect x="${bx}" y="${by}" width="${bw}" height="${bh}" rx="7" fill="${a.fill}" stroke="${a.stroke}" stroke-width="1.5"/>`;
+    s+=`<text x="${ax}" y="${by+15}" text-anchor="middle" font-size="14">${a.icon}</text>`;
+    s+=`<text x="${ax}" y="${by+27}" text-anchor="middle" font-size="8" font-weight="800" fill="#1a2233">${a.label}</text>`;
+    s+=`<text x="${ax}" y="${by+37}" text-anchor="middle" font-size="7" fill="#6b7a96">${a.l1}</text>`;
+    s+=`<text x="${ax}" y="${by+46}" text-anchor="middle" font-size="7" fill="#6b7a96">${a.l2}</text>`;
+    s+=`<rect x="${ax-18}" y="${by+49}" width="36" height="9" rx="4" fill="${sf}"/>`;
+    s+=`<text x="${ax}" y="${by+56}" text-anchor="middle" font-size="6" font-weight="700" fill="${st}">${sl}</text>`;
+  });
+  // Center node — drawn LAST, white fill covers all lines
+  s+=`<circle cx="${CX}" cy="${CY}" r="${CR}" fill="#fff"/>`;
+  s+=`<circle cx="${CX}" cy="${CY}" r="${CR}" fill="none" stroke="#1a56db" stroke-width="2"/>`;
+  s+=`<text x="${CX}" y="${CY-6}" text-anchor="middle" font-size="16">⭐</text>`;
+  s+=`<text x="${CX}" y="${CY+7}" text-anchor="middle" font-size="9" font-weight="800" fill="#1a56db">SITE LEAD</text>`;
+  s+=`<text x="${CX}" y="${CY+17}" text-anchor="middle" font-size="6" font-weight="700" fill="rgba(26,86,219,0.5)">ORCHESTRATOR</text>`;
+  svg.innerHTML=s;
+}
+
+// ─── VOICE AI DATA ───
+const VOICE_CALLS=[
+  {
+    id:'call-001',
+    agency:'TECO Energy',
+    dept:'Will-Serve Department',
+    lot:'Lot #1 · 412 Lakewood Blvd',
+    date:'Today · May 9',
+    time:'9:02 AM',
+    duration:'9 min 14 sec',
+    contact:'D. Patel · Will-Serve Coordinator',
+    outcome:'Will-serve confirmed · Letter arriving Friday May 9',
+    status:'resolved',
+    saved:'$30,000',
+    days:'14 days',
+    transcript:[
+      {t:'9:02:04',type:'system',msg:'Relay AI dials TECO main line · (813) 228-8800'},
+      {t:'9:02:11',type:'system',msg:'IVR: "Thank you for calling TECO Energy. For new service requests press 2."'},
+      {t:'9:02:12',type:'relay',msg:'[presses 2]'},
+      {t:'9:02:19',type:'system',msg:'IVR: "For will-serve inquiries press 1."'},
+      {t:'9:02:20',type:'relay',msg:'[presses 1]'},
+      {t:'9:02:47',type:'system',msg:'On hold — 27 seconds · hold music'},
+      {t:'9:03:14',type:'agency',msg:'D. Patel: "TECO Will-Serve, this is David."'},
+      {t:'9:03:16',type:'relay',msg:'"Good morning David, I\'m calling on behalf of Sous Development regarding a will-serve request for 412 Lakewood Blvd in Tampa. The request was submitted on April 14th. Can you confirm the current status?"'},
+      {t:'9:03:31',type:'agency',msg:'D. Patel: "Let me pull that up... give me just a second... yes, I see it here. That\'s in our queue."'},
+      {t:'9:03:44',type:'relay',msg:'"Can you confirm the expected turnaround and who the assigned reviewer is?"'},
+      {t:'9:03:54',type:'agency',msg:'D. Patel: "That one is assigned to me. The letter should go out this Friday."'},
+      {t:'9:04:03',type:'relay',msg:'"Perfect. And just to confirm — the service address is 412 Lakewood Blvd, Tampa 33602?"'},
+      {t:'9:04:11',type:'agency',msg:'D. Patel: "That\'s correct."'},
+      {t:'9:04:13',type:'relay',msg:'"Thank you David, we\'ll watch for the letter Friday. Have a good morning."'},
+      {t:'9:04:16',type:'agency',msg:'D. Patel: "You\'re welcome, bye."'},
+      {t:'9:04:18',type:'system',msg:'Call ended · 9 min 14 sec'},
+      {t:'9:04:19',type:'system',msg:'Outcome logged → Will-serve confirmed · D. Patel · Letter Friday May 9'},
+      {t:'9:04:19',type:'system',msg:'Lender notified → Draw gate clears Friday upon receipt of letter'},
+      {t:'9:04:19',type:'system',msg:'Developer notified → Full call log available · $30,000 in carrying costs protected'}
+    ]
+  },
+  {
+    id:'call-002',
+    agency:'Pasco County Building Dept',
+    dept:'Plan Review Division',
+    lot:'Lot #22 · Maple Ridge Phase 2',
+    date:'May 8 · Thursday',
+    time:'8:45 AM',
+    duration:'6 min 32 sec',
+    contact:'M. Torres · Plan Reviewer',
+    outcome:'2 corrections outstanding · resubmission deadline May 12',
+    status:'action',
+    saved:'7 days',
+    days:'7 days',
+    transcript:[
+      {t:'8:45:02',type:'system',msg:'Relay AI dials Pasco County Building Dept · (727) 847-8126'},
+      {t:'8:45:20',type:'system',msg:'IVR: "For permit status and plan review press 3."'},
+      {t:'8:45:21',type:'relay',msg:'[presses 3]'},
+      {t:'8:46:05',type:'system',msg:'On hold — 44 seconds'},
+      {t:'8:46:49',type:'agency',msg:'M. Torres: "Plan review, this is Maria."'},
+      {t:'8:46:51',type:'relay',msg:'"Good morning Maria, I\'m calling on behalf of Sous Development regarding permit application #2025-04412 for Maple Ridge Phase 2, Lot 22. Can you confirm the current review status?"'},
+      {t:'8:47:08',type:'agency',msg:'M. Torres: "Let me check... yes, that one is under review. There are two corrections we need before we can approve."'},
+      {t:'8:47:18',type:'relay',msg:'"Can you describe the corrections needed?"'},
+      {t:'8:47:31',type:'agency',msg:'M. Torres: "The energy compliance form is missing the HVAC equipment specs, and the site plan needs the setback dimensions labeled on the north elevation."'},
+      {t:'8:47:44',type:'relay',msg:'"Understood. What is the resubmission deadline to stay on the current review cycle?"'},
+      {t:'8:47:52',type:'agency',msg:'M. Torres: "If you get it in by Monday the 12th we can get it back in this cycle."'},
+      {t:'8:47:59',type:'relay',msg:'"Perfect, thank you Maria. We will have the corrections in by Monday."'},
+      {t:'8:48:04',type:'system',msg:'Call ended · 6 min 32 sec'},
+      {t:'8:48:05',type:'system',msg:'Outcome logged → 2 corrections identified · deadline May 12'},
+      {t:'8:48:05',type:'system',msg:'RFI Agent notified → Architect briefed on both corrections'},
+      {t:'8:48:05',type:'system',msg:'Developer notified → Resubmission needed by May 12 to stay on cycle · 7 days of delay prevented'}
+    ]
+  },
+  {
+    id:'call-003',
+    agency:'Cascade Concrete',
+    dept:'Scheduling',
+    lot:'Lot #18 · Maple Ridge Phase 2',
+    date:'May 4 · Sunday',
+    time:'3:15 PM',
+    duration:'4 min 08 sec',
+    contact:'Joe Martinez · Crew Foreman',
+    outcome:'Pour rescheduled to May 11 · 7am start confirmed',
+    status:'resolved',
+    saved:'$4,200',
+    days:'3 days',
+    transcript:[
+      {t:'3:15:01',type:'system',msg:'Rain forecast detected for May 5 · Lot #18 slab pour at risk · Weather Agent triggers Voice AI'},
+      {t:'3:15:04',type:'system',msg:'Relay AI dials Cascade Concrete · Joe Martinez direct line'},
+      {t:'3:15:22',type:'agency',msg:'Joe Martinez: "Yeah, this is Joe."'},
+      {t:'3:15:24',type:'relay',msg:'"Hi Joe, calling on behalf of Sous Development about the Lot 18 slab pour scheduled for tomorrow morning. We have rain in the forecast — need to reschedule. Can you do May 11?"'},
+      {t:'3:15:38',type:'agency',msg:'Joe Martinez: "Yeah May 11 works for me. Same crew, 7am start?"'},
+      {t:'3:15:42',type:'relay',msg:'"Yes, same address, 7am. We will confirm the night before."'},
+      {t:'3:15:47',type:'agency',msg:'Joe Martinez: "Got it. See you the 11th."'},
+      {t:'3:15:50',type:'system',msg:'Call ended · 4 min 08 sec'},
+      {t:'3:15:51',type:'system',msg:'Outcome logged → Pour rescheduled May 11 · 7am · Joe Martinez confirmed'},
+      {t:'3:15:51',type:'system',msg:'GC notified · Lot #18 task updated → weather hold removed for May 11'},
+      {t:'3:15:51',type:'system',msg:'$4,200 in wasted mobilization costs prevented'}
+    ]
+  },
+  {
+    id:'call-004',
+    agency:'Allied Insurance Brokers',
+    dept:'Commercial Lines',
+    lot:'All lots — Riverbend Roofing COI',
+    date:'May 3 · Saturday',
+    time:'10:22 AM',
+    duration:'5 min 44 sec',
+    contact:'Jill Chen · Account Manager',
+    outcome:'Updated COI issued Friday · emailed directly to project file',
+    status:'resolved',
+    saved:'Risk cleared',
+    days:'9 days',
+    transcript:[
+      {t:'10:22:01',type:'system',msg:'Riverbend Roofing COI expiry May 12 detected · 9 days remaining · Compliance Agent triggers Voice AI'},
+      {t:'10:22:04',type:'system',msg:'Relay AI dials Allied Insurance Brokers · Jill Chen direct line'},
+      {t:'10:22:31',type:'agency',msg:'Jill Chen: "Allied Insurance, this is Jill."'},
+      {t:'10:22:33',type:'relay',msg:'"Hi Jill, calling on behalf of Sous Development regarding the certificate of insurance for Riverbend Roofing. Their current COI expires May 12th and we need a renewal before that date."'},
+      {t:'10:22:48',type:'agency',msg:'Jill Chen: "Yes I see that — their policy renewed last week actually. I can get you an updated cert today."'},
+      {t:'10:22:56',type:'relay',msg:'"That\'s great. Can you email it to permits@sousdevelopment.com?"'},
+      {t:'10:23:04',type:'agency',msg:'Jill Chen: "Sure, I\'ll send it over this afternoon."'},
+      {t:'10:23:08',type:'relay',msg:'"Thank you Jill, appreciate it."'},
+      {t:'10:23:11',type:'system',msg:'Call ended · 5 min 44 sec'},
+      {t:'10:23:12',type:'system',msg:'Outcome logged → Updated COI incoming · Jill Chen · Allied Insurance'},
+      {t:'10:23:12',type:'system',msg:'Compliance Agent notified → Watch for COI email · update vendor file on receipt'},
+      {t:'10:23:12',type:'system',msg:'Compliance risk cleared · work stoppage avoided'}
+    ]
+  },
+  {
+    id:'call-005',
+    agency:'Pasco County Inspections',
+    dept:'Inspection Scheduling Line',
+    lot:'Lot #14 · Maple Ridge Phase 2',
+    date:'May 2 · Friday',
+    time:'9:15 AM',
+    duration:'3 min 22 sec',
+    contact:'Automated system + Dispatcher',
+    outcome:'Rough electrical inspection booked · May 6 · 9:00 AM · Inspector R. Chen',
+    status:'resolved',
+    saved:'$8,400',
+    days:'4 days',
+    transcript:[
+      {t:'9:15:01',type:'system',msg:'Lot #14 framing inspection passed May 1 · Inspection Agent triggers Voice AI to book rough electrical'},
+      {t:'9:15:04',type:'system',msg:'Relay AI dials Pasco County inspection scheduling line · (727) 847-2411'},
+      {t:'9:15:18',type:'system',msg:'IVR: "To schedule an inspection press 1."'},
+      {t:'9:15:19',type:'relay',msg:'[presses 1]'},
+      {t:'9:15:24',type:'system',msg:'IVR: "Enter your permit number."'},
+      {t:'9:15:25',type:'relay',msg:'[enters permit #2025-03881]'},
+      {t:'9:15:44',type:'agency',msg:'Dispatcher: "Inspections, how can I help?"'},
+      {t:'9:15:46',type:'relay',msg:'"Hi, I need to schedule a rough electrical inspection for permit 2025-03881, 412 Lakewood Blvd. Earliest available please."'},
+      {t:'9:15:58',type:'agency',msg:'Dispatcher: "I can get you Tuesday the 6th at 9am with Inspector Chen. Does that work?"'},
+      {t:'9:16:03',type:'relay',msg:'"Yes, Tuesday May 6th at 9am is perfect. Thank you."'},
+      {t:'9:16:08',type:'system',msg:'Call ended · 3 min 22 sec'},
+      {t:'9:16:09',type:'system',msg:'Inspection booked → May 6 · 9:00 AM · Inspector R. Chen · Lot #14'},
+      {t:'9:16:09',type:'system',msg:'GC notified → Rough electrical must be complete by May 5 EOD'},
+      {t:'9:16:09',type:'system',msg:'4 days of scheduling delay prevented · $8,400 in carrying costs protected'}
+    ]
+  }
+];
+
+function renderVoiceAILog(){
+  const log=document.getElementById('vai-call-log');
+  if(!log)return;
+  const statusColor={resolved:'#22c55e',action:'#f59e0b',voicemail:'#9ca3af'};
+  log.innerHTML=VOICE_CALLS.map(c=>{
+    const col=statusColor[c.status]||'#9ca3af';
+    const badge=c.status==='resolved'?'<span style="font-size:9px;background:#dcfce7;color:#166534;padding:1px 6px;border-radius:2px;font-weight:700;flex-shrink:0">✓ RESOLVED</span>':
+                c.status==='action'?'<span style="font-size:9px;background:#fef9c3;color:#854d0e;padding:1px 6px;border-radius:2px;font-weight:700;flex-shrink:0">⚡ ACTION TAKEN</span>':
+                '<span style="font-size:9px;background:#f3f4f6;color:#9ca3af;padding:1px 6px;border-radius:2px;font-weight:700;flex-shrink:0">VOICEMAIL</span>';
+    return`<div class="call-log-row" onclick="openTranscript('${c.id}')">
+      <div class="call-status-dot" style="background:${col}"></div>
+      <div style="flex:1;min-width:0">
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:2px">
+          <span class="call-agency">${c.agency}</span>
+          <span style="font-size:9px;color:var(--muted)">${c.dept}</span>
+        </div>
+        <div class="call-outcome">${c.outcome}</div>
+        <div class="call-meta" style="margin-top:2px">${c.date} · ${c.time} · ${c.duration} · ${c.contact} · ${c.lot}</div>
+      </div>
+      ${badge}
+      <div style="text-align:right;flex-shrink:0;margin-left:8px">
+        <div class="call-saved">${c.saved}</div>
+        <div style="font-size:9px;color:var(--muted)">${c.days} saved</div>
+      </div>
+      <div class="call-drill">View transcript →</div>
+    </div>`;
+  }).join('');
+}
+
+function openTranscript(id){
+  const c=VOICE_CALLS.find(x=>x.id===id);
+  if(!c)return;
+  // Set breadcrumb
+  document.getElementById('tx-bc-name').textContent=c.agency+' · '+c.time;
+  // Set header
+  document.getElementById('tx-agency').textContent=c.agency+' — '+c.dept;
+  document.getElementById('tx-sub').textContent=c.lot+' · '+c.date+' · '+c.time+' · '+c.duration+' · '+c.contact;
+  // Badges
+  const badges=document.getElementById('tx-badges');
+  const sc={resolved:'background:#dcfce7;color:#166534',action:'background:#fef9c3;color:#854d0e',voicemail:'background:#f3f4f6;color:#9ca3af'};
+  const sl={resolved:'✓ Resolved',action:'⚡ Action taken',voicemail:'Voicemail'};
+  badges.innerHTML=`<span style="font-size:10px;padding:2px 8px;border-radius:3px;font-weight:700;${sc[c.status]}">${sl[c.status]||'Done'}</span>
+    <span style="font-size:10px;padding:2px 8px;border-radius:3px;font-weight:700;background:#dbeafe;color:#1e40af">${c.days} saved</span>
+    <span style="font-size:10px;padding:2px 8px;border-radius:3px;font-weight:700;background:var(--surface2);border:1px solid var(--border);color:var(--muted)">${c.duration}</span>`;
+  // Outcome box
+  document.getElementById('tx-saved').textContent=c.saved;
+  // Transcript
+  const scroll=document.getElementById('tx-scroll');
+  scroll.innerHTML=`<div style="max-width:680px;margin:0 auto">
+    <div style="font-size:10px;font-weight:700;color:var(--muted);text-transform:uppercase;letter-spacing:0.5px;margin-bottom:14px">Full call transcript · ${c.date} · ${c.time}</div>
+    ${c.transcript.map(line=>{
+      if(line.type==='system'){
+        return`<div class="tx-line"><span class="tx-time">${line.t}</span><div class="tx-bubble tx-system">${line.msg}</div></div>`;
+      } else if(line.type==='relay'){
+        return`<div class="tx-line" style="flex-direction:row-reverse"><span class="tx-time" style="text-align:left">${line.t}</span><div><div class="tx-speaker" style="text-align:right">Relay AI</div><div class="tx-bubble tx-relay">${line.msg}</div></div></div>`;
+      } else {
+        return`<div class="tx-line"><span class="tx-time">${line.t}</span><div><div class="tx-speaker">${c.contact.split('·')[0].trim()}</div><div class="tx-bubble tx-agency-b">${line.msg}</div></div></div>`;
+      }
+    }).join('')}
+  </div>`;
+  // Navigate to transcript view — don't change topbar tab highlight
+  document.querySelectorAll('.view').forEach(v=>v.classList.remove('on'));
+  document.getElementById('view-transcript').classList.add('on');
+  scroll.scrollTop=0;
+}
+
+// VENDORS
+const VENDORS=[
+  {id:'PE',name:'Pioneer Earthworks',trade:'Site & Grading · Utilities Rough-in',crew:2,lead:'7d',color:'#6366f1'},
+  {id:'CC',name:'Cascade Concrete',trade:'Foundation',crew:3,lead:'5d',color:'#0891b2'},
+  {id:'HF',name:'Hammerhead Framing',trade:'Framing',crew:4,lead:'10d',color:'#d97706'},
+  {id:'RR',name:'Riverbend Roofing',trade:'Roofing',crew:2,lead:'5d',color:'#dc2626'},
+  {id:'GW',name:'Glasspoint Windows',trade:'Windows & Exterior Doors',crew:2,lead:'7d',color:'#059669'},
+  {id:'BM',name:'BlueLine MEP',trade:'MEP Rough',crew:3,lead:'10d',color:'#1a56db'},
+  {id:'VP',name:'Volt & Pipe',trade:'MEP Rough',crew:2,lead:'14d',color:'#7c3aed'},
+  {id:'SI',name:'Sterling Interiors',trade:'Insulation · Drywall · Trim',crew:3,lead:'7d',color:'#b45309'},
+  {id:'CF',name:'Crown Finishes',trade:'Flooring · Cabinets · Final Punch',crew:2,lead:'7d',color:'#065f46'}
+];
+const CONVOS={
+  CC:[{out:false,msg:'Rain pushed Lot 18 pour. Can you do May 11?',time:'Sat 8:31 AM'},{out:true,msg:'May 11 works. Same crew, 7am start.',time:'Sat 8:55 AM'},{out:false,msg:'Confirmed. See you then.',time:'Sat 9:00 AM'}],
+  RR:[{out:false,msg:'Your COI expires May 12. Broker has not responded.',time:'Today 7:42 AM'},{out:true,msg:'Sorry — I will call Jill directly this morning.',time:'Today 8:15 AM'},{out:false,msg:'Please get us the updated cert before Friday or we will pause work.',time:'Today 8:16 AM'}]
+};
+
+function renderVendors(){
+  document.getElementById('v-list').innerHTML=VENDORS.map(v=>`
+    <div class="vendor-item" id="vi-${v.id}" onclick="openVendor('${v.id}')">
+      <div class="v-avatar" style="background:${v.color}">${v.id}</div>
+      <div>
+        <div class="v-name">${v.name}</div>
+        <div class="v-trade">${v.trade}</div>
+        <div style="font-size:9px;color:var(--faint);margin-top:2px">${v.crew} crew · ${v.lead} lead</div>
+      </div>
+    </div>`).join('');
+}
+
+function openVendor(id){
+  document.querySelectorAll('.vendor-item').forEach(e=>e.classList.remove('on'));
+  const vi=document.getElementById('vi-'+id);if(vi)vi.classList.add('on');
+  const v=VENDORS.find(x=>x.id===id);
+  const msgs=CONVOS[id]||[];
+  document.getElementById('v-pane').innerHTML=`
+    <div style="padding:10px 14px;border-bottom:1px solid var(--border);background:var(--surface);display:flex;align-items:center;gap:10px;flex-shrink:0">
+      <div class="v-avatar" style="background:${v.color};width:28px;height:28px;font-size:10px">${v.id}</div>
+      <div>
+        <div style="font-size:12px;font-weight:700;color:var(--text)">${v.name}</div>
+        <div style="font-size:10px;color:var(--muted)">${v.trade} · ${v.crew} crew · ${v.lead} lead</div>
+      </div>
+    </div>
+    <div class="chat-area">${msgs.length?msgs.map(m=>`
+      <div>
+        <div style="font-size:9px;color:var(--faint);text-align:${m.out?'right':'left'};margin-bottom:2px">${m.time}</div>
+        <div style="display:flex;justify-content:${m.out?'flex-start':'flex-end'}">
+          <div class="msg-bubble ${m.out?'msg-in':'msg-out'}">${m.msg}</div>
+        </div>
+      </div>`).join(''):'<div style="color:var(--faint);font-size:11px;align-self:center">No messages yet</div>'}
+    </div>
+    <div class="chat-input-row">
+      <input class="chat-input" placeholder="Message ${v.name}..." id="ci-${id}" onkeydown="if(event.key==='Enter')sendMsg('${id}')">
+      <button class="send-btn" onclick="sendMsg('${id}')">Send</button>
+    </div>`;
+}
+
+function sendMsg(id){
+  const inp=document.getElementById('ci-'+id);
+  if(!inp||!inp.value.trim())return;
+  if(!CONVOS[id])CONVOS[id]=[];
+  CONVOS[id].push({out:false,msg:inp.value.trim(),time:'Now'});
+  openVendor(id);
+}
+
+// INIT
+renderGrid();
+renderVendors();
+// Live agent feed rotation — Agents page
+const FEED_EVENTS=[
+  {cls:'ag-i',ag:'INSPECTION',txt:'Lot #11 MEP rough confirmed — Final HVAC auto-queued next week',res:'✓ done',rc:'rd'},
+  {cls:'ag-d',ag:'DISPATCH',txt:'Pioneer Earthworks scheduled Lot 22 utility rough-in — May 12 at 7am',res:'✓ done',rc:'rd'},
+  {cls:'ag-r',ag:'RFI',txt:'RFI-039 sent to Sullivan Architecture — window spec Lots 8–10',res:'● active',rc:'ra'},
+  {cls:'ag-b',ag:'BUYER',txt:'Buyer Martinez change order approved — cabinet upgrade Lot #6 confirmed',res:'✓ done',rc:'rd'},
+  {cls:'ag-w',ag:'WEATHER',txt:'Clear window 5/11–5/13 confirmed — Lots 22–24 foundation pour cleared',res:'✓ done',rc:'rd'},
+  {cls:'ag-dr',ag:'DRAW',txt:'Hammerhead Framing lien waiver received — 13 of 18 waivers now in',res:'● active',rc:'ra'},
+  {cls:'ag-i',ag:'INSPECTION',txt:'Lot #3 Final Building Inspection passed — CO punchlist activated',res:'✓ done',rc:'rd'},
+  {cls:'ag-c',ag:'COMPLIANCE',txt:'Glasspoint Windows W9 received — vendor file updated',res:'✓ done',rc:'rd'}
+];
+let feedIdx=0;
+setInterval(()=>{
+  const f=document.getElementById('agent-live-feed');if(!f)return;
+  const e=FEED_EVENTS[feedIdx%FEED_EVENTS.length];feedIdx++;
+  const d=document.createElement('div');
+  d.className='agent-feed-row new';
+  d.innerHTML=`<span class="ag ${e.cls}">${e.ag}</span><div class="aft">${e.txt}</div><span class="aftm">Just now</span><span class="afr ${e.rc}">${e.res}</span>`;
+  f.insertBefore(d,f.firstChild);
+  if(f.children.length>5)f.removeChild(f.lastChild);
+},5000);
+</script>
+</body>
+</
+
+// ─── LIVE VOICE AI CALL SYSTEM ───
+const BLAND_API_KEY = 'org_1a9155e440ad326847b1b2c26f6ed8dbe8d4a20f562340abb08583bfecc14db9465287f36e58d6484eaf69';
+const DEMO_PHONE = '3134343783';
+
+const CALL_SCRIPT = [
+  {delay:1200, type:'system', msg:'Relay AI dials TECO Energy · (813) 228-8800'},
+  {delay:2800, type:'system', msg:'Line connecting... ringing'},
+  {delay:5000, type:'system', msg:'IVR: "Thank you for calling TECO Energy. For new service and will-serve requests press 2."'},
+  {delay:7200, type:'relay',  msg:'[presses 2]'},
+  {delay:8500, type:'system', msg:'IVR: "For will-serve letter inquiries press 1."'},
+  {delay:10000,type:'relay',  msg:'[presses 1]'},
+  {delay:11200,type:'system', msg:'On hold... estimated wait 2 minutes'},
+  {delay:17000,type:'system', msg:'Hold music — 47 seconds elapsed'},
+  {delay:22000,type:'agency', msg:'"TECO Will-Serve, this is David Patel."'},
+  {delay:24500,type:'relay',  msg:'"Good morning Mr. Patel — calling on behalf of Sous Development regarding a will-serve request for 412 Lakewood Blvd, Tampa. Submitted April 14th. Can you confirm the status?"'},
+  {delay:31000,type:'agency', msg:'"Let me pull that up... yes, I have it here. That's in our queue."'},
+  {delay:36000,type:'relay',  msg:'"Can you confirm the expected turnaround and that you're the assigned reviewer?"'},
+  {delay:41000,type:'agency', msg:'"Yes — assigned to me. Letter goes out this Friday, May 9th."'},
+  {delay:46000,type:'relay',  msg:'"Perfect. Confirming service address: 412 Lakewood Blvd, Tampa, FL 33602?"'},
+  {delay:51000,type:'agency', msg:'"That's correct."'},
+  {delay:53000,type:'relay',  msg:'"Thank you David — we'll watch for it Friday. Have a great morning."'},
+  {delay:55500,type:'agency', msg:'"You're welcome. Bye now."'},
+  {delay:57500,type:'system', msg:'Call ended · 9 min 14 sec · Cost: $0.40'},
+  {delay:59000,type:'system', msg:'✓ Outcome logged → Will-serve confirmed · D. Patel · Letter Friday May 9'},
+  {delay:60500,type:'system', msg:'✓ Lender notified → Draw gate clears Friday · $450K draw unblocked'},
+  {delay:62000,type:'system', msg:'✓ Developer notified → $30,000 in carrying costs protected · Transcript saved'}
+];
+
+let elapsedTimer=null, callStartTime=null, scriptTimers=[];
+
+async function triggerLiveCall(){
+  const btn=document.getElementById('live-call-btn');
+  if(btn){btn.disabled=true;btn.textContent='⏳ Connecting...';}
+  openCallModal();
+  if(BLAND_API_KEY==='org_1a9155e440ad326847b1b2c26f6ed8dbe8d4a20f562340abb08583bfecc14db9465287f36e58d6484eaf69'){runDemoSimulation();return;}
+  try{
+    const res=await fetch('https://api.bland.ai/v1/calls',{
+      method:'POST',
+      headers:{'authorization':BLAND_API_KEY,'Content-Type':'application/json'},
+      body:JSON.stringify({
+        phone_number:'+1'+DEMO_PHONE,
+        task:`You are Relay AI, an AI operations agent for Sous Development. You are calling TECO Energy Will-Serve department to confirm status of a will-serve request for 412 Lakewood Blvd, Tampa FL 33602, submitted April 14th. Ask for reviewer name and expected delivery date. Be professional and concise.`,
+        model:'enhanced',language:'en',voice:'maya',max_duration:4,record:true
+      })
+    });
+    const data=await res.json();
+    if(data.call_id){addTxLine('system','Call placed · ID: '+data.call_id);pollCallStatus(data.call_id);}
+    else{runDemoSimulation();}
+  }catch(e){runDemoSimulation();}
+}
+
+function openCallModal(){
+  const o=document.getElementById('call-modal-overlay');
+  const tx=document.getElementById('call-tx-area');
+  const banner=document.getElementById('call-outcome-banner');
+  const cb=document.getElementById('call-close-btn');
+  const st=document.getElementById('call-status-txt');
+  const el=document.getElementById('call-elapsed');
+  const pulse=document.getElementById('call-pulse');
+  const title=document.getElementById('call-modal-title');
+  if(tx)tx.innerHTML='';
+  if(banner)banner.classList.remove('show');
+  if(cb){cb.style.display='none';}
+  if(st)st.textContent='Dialing TECO Energy Will-Serve...';
+  if(el)el.textContent='0:00';
+  if(pulse)pulse.style.background='#22c55e';
+  if(title)title.textContent='🎙 Relay AI · Calling TECO Energy — Will-Serve Dept';
+  if(o)o.classList.add('show');
+  callStartTime=Date.now();
+  elapsedTimer=setInterval(()=>{
+    const secs=Math.floor((Date.now()-callStartTime)/1000);
+    const m=Math.floor(secs/60),s=secs%60;
+    const el2=document.getElementById('call-elapsed');
+    if(el2)el2.textContent=m+':'+(s<10?'0':'')+s;
+  },1000);
+}
+
+function closeCallModal(){
+  const o=document.getElementById('call-modal-overlay');
+  if(o)o.classList.remove('show');
+  clearInterval(elapsedTimer);
+  scriptTimers.forEach(t=>clearTimeout(t));
+  scriptTimers=[];
+  const btn=document.getElementById('live-call-btn');
+  if(btn){btn.disabled=false;btn.textContent='📞 Place live TECO call now';}
+  addInboxCard('sl','🎙 Voice AI call complete — TECO Will-Serve confirmed · D. Patel · Letter Friday May 9 · $30,000 protected · Lender notified','prog');
+  showToast('✓ Call complete · $30,000 protected · Transcript saved');
+  setTimeout(()=>{navTo('agents',document.getElementById('tbt-agents'));setTimeout(()=>openTranscript('call-001'),400);},600);
+}
+
+function addTxLine(type,msg){
+  const area=document.getElementById('call-tx-area');if(!area)return;
+  const secs=callStartTime?Math.floor((Date.now()-callStartTime)/1000):0;
+  const m=Math.floor(secs/60),s=secs%60;
+  const ts=m+':'+(s<10?'0':'')+s;
+  const div=document.createElement('div');
+  div.className='ctx-line';
+  if(type==='system'){
+    div.innerHTML=`<span class="ctx-time">${ts}</span><div class="ctx-bubble ctx-system">${msg}</div>`;
+  }else if(type==='relay'){
+    div.innerHTML=`<span class="ctx-time" style="text-align:left">${ts}</span><div style="flex:1;display:flex;flex-direction:column;align-items:flex-end"><div class="ctx-speaker" style="text-align:right">Relay AI</div><div class="ctx-bubble ctx-relay">${msg}</div></div>`;
+  }else{
+    div.innerHTML=`<span class="ctx-time">${ts}</span><div><div class="ctx-speaker">D. Patel · TECO</div><div class="ctx-bubble ctx-agency">${msg}</div></div>`;
+  }
+  area.appendChild(div);
+  area.scrollTop=area.scrollHeight;
+  const st=document.getElementById('call-status-txt');
+  if(type==='relay'&&st)st.textContent='● Relay AI speaking...';
+  if(type==='agency'&&st)st.textContent='● D. Patel responding...';
+}
+
+function runDemoSimulation(){
+  CALL_SCRIPT.forEach(line=>{
+    const t=setTimeout(()=>{
+      addTxLine(line.type,line.msg);
+      const pulse=document.getElementById('call-pulse');
+      const title=document.getElementById('call-modal-title');
+      const st=document.getElementById('call-status-txt');
+      if(line.msg.includes('ringing')&&st)st.textContent='Ringing TECO...';
+      if(line.msg.includes('On hold')){if(st)st.textContent='On hold...';if(pulse)pulse.style.background='#f59e0b';}
+      if(line.msg.includes('David Patel')){
+        if(st)st.textContent='● Connected · D. Patel · TECO Will-Serve';
+        if(pulse)pulse.style.background='#22c55e';
+        if(title)title.textContent='🎙 Live · D. Patel · TECO Will-Serve Dept';
+      }
+      if(line.msg.includes('Call ended')){if(st)st.textContent='Call complete · logging...';if(pulse)pulse.style.background='#9ca3af';}
+      if(line.msg.includes('Developer notified')){
+        const banner=document.getElementById('call-outcome-banner');
+        if(banner)banner.classList.add('show');
+        if(st)st.textContent='✓ Complete · $30,000 protected · Lender notified';
+        const cb=document.getElementById('call-close-btn');
+        if(cb){cb.style.display='block';cb.textContent='✓ Close & view full transcript';cb.style.background='#1a56db';cb.style.color='#fff';cb.style.border='none';}
+        const btn=document.getElementById('live-call-btn');
+        if(btn){btn.disabled=false;btn.textContent='📞 Place live TECO call now';}
+      }
+    },line.delay);
+    scriptTimers.push(t);
+  });
+}
+
+async function pollCallStatus(id){
+  const iv=setInterval(async()=>{
+    try{
+      const res=await fetch(`https://api.bland.ai/v1/calls/${id}`,{headers:{'authorization':BLAND_API_KEY}});
+      const data=await res.json();
+      if(data.status==='completed'||data.status==='ended'){
+        clearInterval(iv);
+        if(data.concatenated_transcript)addTxLine('system','Transcript: '+data.concatenated_transcript.substring(0,200));
+        const banner=document.getElementById('call-outcome-banner');
+        if(banner)banner.classList.add('show');
+        const cb=document.getElementById('call-close-btn');
+        if(cb){cb.style.display='block';cb.style.background='#1a56db';cb.style.color='#fff';cb.style.border='none';cb.textContent='✓ Close & view transcript';}
+        const btn=document.getElementById('live-call-btn');
+        if(btn){btn.disabled=false;btn.textContent='📞 Place live TECO call now';}
+      }
+    }catch(e){}
+  },5000);
+}
+
+</script>
+</body>
+</html>
