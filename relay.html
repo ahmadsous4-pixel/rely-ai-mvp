@@ -1,0 +1,982 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Relay AI — PineCove Building</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Inter','Segoe UI',sans-serif;font-size:13px;color:#111827;background:#fff;height:100vh;display:flex;flex-direction:column;overflow:hidden}
+
+/* ── NAV ── */
+.nav{height:44px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;padding:0 20px;gap:0;flex-shrink:0;background:#fff}
+.nav-logo{display:flex;align-items:center;gap:8px;margin-right:6px}
+.nav-r{width:26px;height:26px;background:#0a1628;border-radius:6px;display:flex;align-items:center;justify-content:center;color:#fff;font-size:12px;font-weight:700}
+.nav-brand{font-size:13px;font-weight:700;color:#111827}
+.nav-sep{color:#d1d5db;margin:0 8px;font-size:14px}
+.nav-company{font-size:13px;color:#6b7280;font-weight:400}
+.nav-tabs{display:flex;gap:0;margin-left:24px;flex:1}
+.nav-tab{padding:0 14px;height:44px;display:flex;align-items:center;gap:6px;font-size:13px;color:#6b7280;cursor:pointer;border-bottom:2px solid transparent;transition:all 0.1s;position:relative;top:1px}
+.nav-tab:hover{color:#111827}
+.nav-tab.active{color:#111827;border-bottom-color:#111827;font-weight:500}
+.nav-badge{background:#f3f4f6;color:#374151;font-size:11px;font-weight:600;padding:1px 6px;border-radius:10px}
+.nav-badge.red{background:#fee2e2;color:#dc2626}
+.nav-right{margin-left:auto;display:flex;align-items:center;gap:16px}
+.nav-reset{font-size:12px;color:#9ca3af;cursor:pointer}
+.nav-reset:hover{color:#6b7280}
+.nav-user{font-size:12px;color:#6b7280}
+
+/* ── TAB VIEWS ── */
+.tab-view{display:none;flex:1;overflow:hidden;flex-direction:column}
+.tab-view.active{display:flex}
+
+/* ── DASHBOARD ── */
+.dash-toolbar{padding:12px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:center;gap:10px;flex-shrink:0}
+.cycle-select{display:flex;align-items:center;gap:6px;font-size:12px;color:#374151}
+.select-btn{border:1px solid #e5e7eb;border-radius:6px;padding:4px 10px;font-size:12px;color:#111827;background:#fff;cursor:pointer;display:flex;align-items:center;gap:4px}
+.select-btn:hover{background:#f9fafb}
+.dash-updated{margin-left:auto;font-size:11px;color:#6b7280;display:flex;align-items:center;gap:5px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:#16a34a;animation:pp 2s infinite}
+@keyframes pp{0%,100%{opacity:1}50%{opacity:0.4}}
+
+.dash-scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.dash-scroll::-webkit-scrollbar{width:4px}
+.dash-scroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+
+/* KPI grid */
+.kpi-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:16px}
+.kpi-card{border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px 0;overflow:hidden;position:relative}
+.kpi-label{font-size:10px;font-weight:600;color:#6b7280;text-transform:uppercase;letter-spacing:0.5px;margin-bottom:8px}
+.kpi-value{font-size:28px;font-weight:700;color:#111827;line-height:1;margin-bottom:4px}
+.kpi-compare{font-size:11px;font-weight:600;display:flex;align-items:center;gap:3px;margin-bottom:8px}
+.kpi-compare.up{color:#16a34a}
+.kpi-compare.down-good{color:#16a34a}
+.kpi-compare.down-bad{color:#d97706}
+.kpi-sub{font-size:10px;color:#9ca3af;margin-bottom:8px}
+.kpi-warn{position:absolute;top:10px;right:10px;width:8px;height:8px;border-radius:50%;background:#f59e0b}
+.sparkline{width:100%;height:32px;display:block;margin:0 -16px;width:calc(100% + 32px)}
+
+/* Chart section */
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-bottom:16px}
+.chart-card{border:1px solid #e5e7eb;border-radius:8px;padding:16px}
+.chart-title{font-size:13px;font-weight:600;color:#111827;margin-bottom:2px;display:flex;align-items:center;justify-content:space-between}
+.chart-target{font-size:11px;color:#9ca3af}
+.chart-legend{display:flex;gap:12px;margin-bottom:12px;flex-wrap:wrap}
+.legend-item{display:flex;align-items:center;gap:4px;font-size:10px;color:#6b7280}
+.legend-dot{width:8px;height:8px;border-radius:2px;flex-shrink:0}
+.chart-area{width:100%;height:180px;position:relative}
+canvas.chart-canvas{width:100%!important;height:180px!important}
+
+/* Tables */
+.table-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.table-card{border:1px solid #e5e7eb;border-radius:8px;overflow:hidden}
+.table-title{font-size:13px;font-weight:600;color:#111827;padding:12px 16px;border-bottom:1px solid #e5e7eb}
+table.data-table{width:100%;border-collapse:collapse}
+table.data-table th{font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.4px;padding:8px 16px;text-align:left;border-bottom:1px solid #f3f4f6}
+table.data-table td{padding:9px 16px;font-size:12px;color:#374151;border-bottom:1px solid #f9fafb}
+table.data-table tr:last-child td{border-bottom:none}
+table.data-table tr:hover td{background:#f9fafb}
+.td-late{color:#dc2626;font-weight:600}
+.td-cost{color:#374151}
+.td-name{font-weight:500;color:#111827}
+.td-warn{color:#d97706;font-weight:600}
+/* Active draws table */
+.stage-pill{background:#f3f4f6;color:#374151;font-size:11px;padding:2px 8px;border-radius:4px;white-space:nowrap}
+.stage-pill.stage-waiting{background:#fef3c7;color:#92400e}
+.blocker-action{background:#b45309;color:#fff;border:none;border-radius:5px;padding:3px 10px;font-size:11px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.12s}
+.blocker-action:hover{background:#92400e}
+.blocker-action.approved{background:#16a34a;cursor:default}
+.blocker-chasing{display:flex;align-items:center;gap:6px;font-size:12px;color:#374151}
+.blocker-bar{width:3px;height:14px;background:#6366f1;border-radius:2px;flex-shrink:0}
+
+/* ── DRAFTS ── */
+.drafts-layout{display:flex;flex:1;overflow:hidden}
+.drafts-sidebar{width:280px;border-right:1px solid #e5e7eb;display:flex;flex-direction:column;flex-shrink:0}
+.sidebar-header{padding:12px 14px;border-bottom:1px solid #e5e7eb;flex-shrink:0}
+.sidebar-stats{font-size:12px;font-weight:500;color:#111827;margin-bottom:8px}
+.sidebar-search{width:100%;border:1px solid #e5e7eb;border-radius:6px;padding:6px 10px;font-size:12px;color:#374151;outline:none;background:#f9fafb}
+.sidebar-search:focus{border-color:#6366f1;background:#fff}
+.sidebar-list{flex:1;overflow-y:auto}
+.sidebar-list::-webkit-scrollbar{width:3px}
+.sidebar-list::-webkit-scrollbar-thumb{background:#e5e7eb}
+.lot-item{display:flex;align-items:center;gap:10px;padding:8px 14px;cursor:pointer;border-bottom:1px solid #f3f4f6;transition:background 0.08s}
+.lot-item:hover{background:#f9fafb}
+.lot-item.active{background:#eef2ff}
+.lot-dot{width:7px;height:7px;border-radius:50%;flex-shrink:0}
+.lot-info{flex:1;min-width:0}
+.lot-num{font-size:12px;font-weight:600;color:#111827}
+.lot-sub{font-size:11px;color:#9ca3af;truncate:ellipsis;overflow:hidden;white-space:nowrap}
+.lot-amt{font-size:12px;color:#6b7280;flex-shrink:0}
+
+.drafts-main{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.drafts-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between}
+.drafts-title{font-size:22px;font-weight:700;color:#111827;margin-bottom:2px}
+.drafts-meta{font-size:13px;color:#9ca3af}
+.run-btn{background:#b45309;color:#fff;border:none;border-radius:7px;padding:9px 18px;font-size:13px;font-weight:600;cursor:pointer;white-space:nowrap;transition:background 0.12s}
+.run-btn:hover{background:#92400e}
+.drafts-scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.drafts-scroll::-webkit-scrollbar{width:4px}
+.drafts-scroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+.draft-card{border:1px solid #e5e7eb;border-radius:8px;margin-bottom:12px;overflow:hidden;transition:box-shadow 0.12s}
+.draft-card:hover{box-shadow:0 1px 8px rgba(0,0,0,0.06)}
+.draft-card-header{display:flex;align-items:center;gap:10px;padding:12px 14px}
+.draft-avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;color:#fff;flex-shrink:0}
+.draft-name{font-size:13px;font-weight:600;color:#111827}
+.draft-company{font-size:11px;color:#9ca3af;margin-top:1px}
+.sms-badge{background:#f3f4f6;color:#374151;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;border:1px solid #e5e7eb}
+.draft-lot-info{margin-left:auto;text-align:right;flex-shrink:0}
+.draft-lot{font-size:11px;color:#9ca3af}
+.draft-amount{font-size:13px;font-weight:600;color:#111827}
+.draft-message-wrap{padding:0 14px 12px}
+.draft-message{background:#f3f4f6;border-radius:8px;padding:12px 14px;font-size:12px;color:#374151;line-height:1.65;margin-bottom:6px}
+.draft-meta-row{display:flex;align-items:center;justify-content:space-between}
+.draft-phone{font-size:11px;color:#9ca3af}
+.draft-actions{display:flex;align-items:center;gap:8px;padding:10px 14px;border-top:1px solid #f3f4f6}
+.skip-btn{font-size:12px;color:#9ca3af;background:none;border:none;cursor:pointer;padding:4px 8px}
+.skip-btn:hover{color:#6b7280}
+.send-btn{background:#b45309;color:#fff;border:none;border-radius:6px;padding:6px 20px;font-size:12px;font-weight:600;cursor:pointer;margin-left:auto;transition:background 0.12s}
+.send-btn:hover{background:#92400e}
+.send-btn.sent{background:#16a34a}
+
+/* ── AGENTS ── */
+.agents-layout{display:flex;flex:1;overflow:hidden}
+.agents-sidebar{width:280px;border-right:1px solid #e5e7eb;overflow-y:auto;flex-shrink:0}
+.agents-sidebar::-webkit-scrollbar{width:3px}
+.agents-sidebar::-webkit-scrollbar-thumb{background:#e5e7eb}
+.agent-section-label{font-size:11px;font-weight:600;color:#9ca3af;padding:12px 14px 6px;text-transform:uppercase;letter-spacing:0.5px}
+.agent-item{display:flex;align-items:center;gap:10px;padding:9px 14px;cursor:pointer;transition:background 0.08s}
+.agent-item:hover{background:#f9fafb}
+.agent-item.active{background:#eef2ff}
+.agent-icon-wrap{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.agent-info{flex:1;min-width:0}
+.agent-name{font-size:12px;font-weight:600;color:#111827}
+.agent-desc{font-size:11px;color:#9ca3af;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;margin-top:1px}
+.agent-count{display:flex;align-items:center;gap:4px;flex-shrink:0}
+.count-dot{width:6px;height:6px;border-radius:50%;background:#9ca3af}
+.count-dot.active{background:#16a34a}
+.count-num{font-size:11px;color:#6b7280}
+
+.agent-detail{flex:1;display:flex;flex-direction:column;overflow:hidden}
+.agent-detail-header{padding:16px 20px;border-bottom:1px solid #e5e7eb;display:flex;align-items:flex-start;justify-content:space-between;flex-shrink:0}
+.agent-detail-left{display:flex;align-items:flex-start;gap:12px}
+.agent-detail-icon{width:40px;height:40px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;background:#f3f4f6}
+.agent-detail-name{font-size:16px;font-weight:700;color:#111827;margin-bottom:3px}
+.agent-detail-desc{font-size:12px;color:#9ca3af}
+.agent-detail-desc code{background:#f3f4f6;padding:1px 5px;border-radius:3px;font-family:monospace;font-size:11px;color:#374151}
+.agent-controls{display:flex;gap:8px;align-items:center;flex-shrink:0}
+.running-btn{background:#16a34a;color:#fff;border:none;border-radius:6px;padding:6px 14px;font-size:12px;font-weight:600;cursor:pointer;display:flex;align-items:center;gap:5px}
+.running-dot{width:6px;height:6px;border-radius:50%;background:#fff;animation:pp 1s infinite}
+.ctrl-btn{background:#fff;border:1px solid #e5e7eb;border-radius:6px;padding:6px 14px;font-size:12px;color:#374151;cursor:pointer}
+.ctrl-btn:hover{background:#f9fafb}
+
+.agent-detail-scroll{flex:1;overflow-y:auto;padding:16px 20px}
+.agent-detail-scroll::-webkit-scrollbar{width:4px}
+.agent-detail-scroll::-webkit-scrollbar-thumb{background:#e5e7eb;border-radius:2px}
+
+.agent-stats-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:0;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:20px}
+.agent-stat{padding:14px 16px;border-right:1px solid #e5e7eb}
+.agent-stat:last-child{border-right:none}
+.agent-stat-label{font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.4px;margin-bottom:6px}
+.agent-stat-value{font-size:24px;font-weight:700;color:#111827;line-height:1;margin-bottom:3px}
+.agent-stat-compare{font-size:11px;color:#16a34a;font-weight:500}
+.agent-stat-compare.neutral{color:#9ca3af}
+
+.agent-section-title{font-size:13px;font-weight:600;color:#111827;margin-bottom:10px}
+.threads-table{width:100%;border-collapse:collapse;border:1px solid #e5e7eb;border-radius:8px;overflow:hidden;margin-bottom:20px}
+.threads-table th{font-size:10px;font-weight:600;color:#9ca3af;text-transform:uppercase;letter-spacing:0.4px;padding:9px 14px;text-align:left;background:#f9fafb;border-bottom:1px solid #e5e7eb}
+.threads-table td{padding:11px 14px;font-size:12px;color:#374151;border-bottom:1px solid #f3f4f6}
+.threads-table tr:last-child td{border-bottom:none}
+.thread-avatar{width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:10px;font-weight:700;color:#fff;flex-shrink:0}
+.thread-name{font-weight:600;color:#111827;font-size:12px}
+.thread-phone{font-size:11px;color:#9ca3af}
+.status-badge{font-size:10px;font-weight:600;padding:2px 8px;border-radius:4px}
+.status-drafted{background:#fef3c7;color:#92400e}
+.status-sent{background:#dcfce7;color:#166534}
+.awaiting{font-size:11px;color:#6b7280}
+.eta-today{font-size:11px;color:#111827;font-weight:500}
+
+.history-toggle{display:flex;align-items:center;gap:6px;font-size:13px;font-weight:500;color:#6b7280;cursor:pointer;margin-bottom:16px}
+.history-toggle:hover{color:#374151}
+
+.context-card{background:#f9fafb;border:1px solid #e5e7eb;border-radius:8px;padding:14px 16px}
+.context-title{font-size:12px;font-weight:600;color:#111827;margin-bottom:6px}
+.context-text{font-size:12px;color:#6b7280;line-height:1.7}
+</style>
+</head>
+<body>
+
+<!-- NAV -->
+<nav class="nav">
+  <div class="nav-logo">
+    <div class="nav-r">R</div>
+    <span class="nav-brand">Relay</span>
+  </div>
+  <span class="nav-sep">·</span>
+  <span class="nav-company">PineCove Building</span>
+  <div class="nav-tabs">
+    <div class="nav-tab active" onclick="switchTab('dashboard',this)">Dashboard</div>
+    <div class="nav-tab" onclick="switchTab('drafts',this)">Drafts <span class="nav-badge" id="drafts-count">20</span></div>
+    <div class="nav-tab" onclick="switchTab('agents',this)">Agents <span class="nav-badge red">1</span></div>
+    <div class="nav-tab" onclick="switchTab('settings',this)">Settings</div>
+  </div>
+  <div class="nav-right">
+    <span class="nav-reset" onclick="resetDemo()">reset demo</span>
+    <span class="nav-user">Haytham Obeid · draw coord</span>
+  </div>
+</nav>
+
+<!-- ══════════════════════ DASHBOARD ══════════════════════ -->
+<div class="tab-view active" id="tab-dashboard">
+  <div class="dash-toolbar">
+    <span class="cycle-select">Cycle: <button class="select-btn">May 2026 ▾</button></span>
+    <span class="cycle-select">Since launch: <button class="select-btn">Apr 2026 ▾</button></span>
+    <span style="font-size:11px;color:#6366f1;font-weight:600;background:#eef2ff;padding:3px 10px;border-radius:4px">● 2 months live</span>
+    <div class="dash-updated"><div class="live-dot"></div> Updated 2 min ago</div>
+  </div>
+  <div class="dash-scroll">
+
+    <!-- KPI cards -->
+    <div class="kpi-grid">
+      <div class="kpi-card">
+        <div class="kpi-label">Avg Cycle Time</div>
+        <div class="kpi-value">11.4<span style="font-size:16px;font-weight:500;color:#6b7280">d</span></div>
+        <div class="kpi-compare down-good">▲ -6.8d since launch</div>
+        <svg class="sparkline" viewBox="0 0 200 32" preserveAspectRatio="none">
+          <polyline points="0,26 80,18 140,8 200,5" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">Interest Carry Saved</div>
+        <div class="kpi-value" style="font-size:22px">$42,180</div>
+        <div class="kpi-compare up">▲ 2 cycles in</div>
+        <svg class="sparkline" viewBox="0 0 200 32" preserveAspectRatio="none">
+          <polyline points="0,28 80,20 140,10 200,6" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">On-Time Submission</div>
+        <div class="kpi-value">94<span style="font-size:16px;font-weight:500;color:#6b7280">%</span></div>
+        <div class="kpi-compare up">▲ +6 pts vs Apr</div>
+        <svg class="sparkline" viewBox="0 0 200 32" preserveAspectRatio="none">
+          <polyline points="0,22 80,18 140,12 200,8" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-warn"></div>
+        <div class="kpi-label">COI Compliance</div>
+        <div class="kpi-value">88<span style="font-size:16px;font-weight:500;color:#6b7280">%</span></div>
+        <div class="kpi-compare down-bad">▼ -4 pts vs Apr</div>
+        <svg class="sparkline" viewBox="0 0 200 32" preserveAspectRatio="none">
+          <polyline points="0,10 33,12 66,14 100,12 133,18 166,20 200,24" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      </div>
+      <div class="kpi-card">
+        <div class="kpi-label">RFI Volume</div>
+        <div class="kpi-value">7 <span style="font-size:14px;font-weight:500;color:#6b7280">RFIs</span></div>
+        <div class="kpi-sub">across 3 draws · 2 still open</div>
+        <svg class="sparkline" viewBox="0 0 200 32" preserveAspectRatio="none">
+          <polyline points="0,10 33,18 66,12 100,20 133,14 166,18 200,12" fill="none" stroke="#d1d5db" stroke-width="1.5"/>
+        </svg>
+      </div>
+    </div>
+
+    <!-- Charts -->
+    <div class="chart-grid">
+      <div class="chart-card">
+        <div class="chart-title">Cycle time · last 6 cycles <span class="chart-target">target 10d</span></div>
+        <div class="chart-area" style="margin-top:12px">
+          <canvas id="cycleChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+      <div class="chart-card">
+        <div class="chart-title">Where time is spent</div>
+        <div class="chart-legend">
+          <div class="legend-item"><div class="legend-dot" style="background:#c7d2fe"></div>Waivers</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#a5b4fc"></div>COI</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#6366f1"></div>Inspection</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#4338ca"></div>Lender review</div>
+          <div class="legend-item"><div class="legend-dot" style="background:#1e1b4b"></div>RFI</div>
+        </div>
+        <div class="chart-area">
+          <canvas id="stackedChart" class="chart-canvas"></canvas>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Draws -->
+    <div class="table-card" style="margin-bottom:12px">
+      <div class="table-title" style="display:flex;align-items:center;gap:8px">
+        Active draws
+        <span style="font-size:11px;font-weight:500;color:#9ca3af">8 open</span>
+      </div>
+      <table class="data-table">
+        <thead>
+          <tr>
+            <th>Lot</th>
+            <th>Lender</th>
+            <th>Stage</th>
+            <th style="text-align:right">Draw $</th>
+            <th style="text-align:right">Days Open</th>
+            <th>Blocker</th>
+            <th style="text-align:right">ETA Wire</th>
+          </tr>
+        </thead>
+        <tbody id="active-draws-body">
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 23</td>
+            <td>Built</td>
+            <td><span class="stage-pill">Waivers in</span></td>
+            <td style="text-align:right">$210,000</td>
+            <td style="text-align:right;color:#374151">3d</td>
+            <td><button class="blocker-action" onclick="approveAction(this)">Approve CO #14-03</button></td>
+            <td style="text-align:right;color:#374151">Tue</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 24</td>
+            <td>Rabbet</td>
+            <td><span class="stage-pill">Package generating</span></td>
+            <td style="text-align:right">$261,000</td>
+            <td style="text-align:right;color:#374151">4d</td>
+            <td><span class="blocker-chasing"><span class="blocker-bar"></span>Chasing 2 waivers</span></td>
+            <td style="text-align:right;color:#374151">Wed</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 25</td>
+            <td>Land Gorilla</td>
+            <td><span class="stage-pill">Submitted to portal</span></td>
+            <td style="text-align:right">$308,000</td>
+            <td style="text-align:right;color:#374151">5d</td>
+            <td><span class="blocker-chasing"><span class="blocker-bar"></span>Chasing 2 waivers</span></td>
+            <td style="text-align:right;color:#374151">Thu</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 26</td>
+            <td>First Federal</td>
+            <td><span class="stage-pill">Lender review</span></td>
+            <td style="text-align:right">$311,000</td>
+            <td style="text-align:right;color:#374151">6d</td>
+            <td><span style="color:#d1d5db">—</span></td>
+            <td style="text-align:right;color:#374151">Fri</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 27</td>
+            <td>B. Hudson</td>
+            <td><span class="stage-pill stage-waiting">Awaiting RFI response</span></td>
+            <td style="text-align:right">$345,000</td>
+            <td style="text-align:right;color:#374151">7d</td>
+            <td><span class="blocker-chasing"><span class="blocker-bar"></span>Chasing 2 waivers</span></td>
+            <td style="text-align:right;color:#9ca3af">next Mon</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 28</td>
+            <td>Sound Capital</td>
+            <td><span class="stage-pill">Waivers in</span></td>
+            <td style="text-align:right">$400,000</td>
+            <td style="text-align:right;color:#374151">8d</td>
+            <td><span class="blocker-chasing"><span class="blocker-bar"></span>Chasing 2 waivers</span></td>
+            <td style="text-align:right;font-weight:600;color:#16a34a">Today</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 29</td>
+            <td>Built</td>
+            <td><span class="stage-pill">Package generating</span></td>
+            <td style="text-align:right">$206,000</td>
+            <td style="text-align:right;color:#374151">9d</td>
+            <td><span style="color:#d1d5db">—</span></td>
+            <td style="text-align:right;color:#374151">Tue</td>
+          </tr>
+          <tr>
+            <td class="td-name" style="font-family:monospace;font-size:12px">Lot 30</td>
+            <td>Rabbet</td>
+            <td><span class="stage-pill">Submitted to portal</span></td>
+            <td style="text-align:right">$406,000</td>
+            <td style="text-align:right;color:#374151">3d</td>
+            <td><span class="blocker-chasing"><span class="blocker-bar"></span>Chasing 2 waivers</span></td>
+            <td style="text-align:right;color:#374151">Wed</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Tables -->
+    <div class="table-grid">
+      <div class="table-card">
+        <div class="table-title">Subs costing time</div>
+        <table class="data-table">
+          <thead><tr><th>Sub</th><th>Avg Sign</th><th>Late</th><th>Carry Cost</th></tr></thead>
+          <tbody>
+            <tr><td class="td-name">Hartwell Plumbing</td><td>3.2d</td><td class="td-late">4×</td><td>$8,400</td></tr>
+            <tr><td class="td-name">Sierra Framing</td><td>2.1d</td><td class="td-late">2×</td><td>$5,200</td></tr>
+            <tr><td class="td-name">Apex Electric</td><td>1.8d</td><td>1×</td><td>$2,800</td></tr>
+            <tr><td class="td-name">Cascade Concrete</td><td>4.5d</td><td class="td-late">6×</td><td>$12,300</td></tr>
+            <tr><td class="td-name">Sunbelt HVAC</td><td>2.9d</td><td class="td-late">3×</td><td>$7,100</td></tr>
+          </tbody>
+        </table>
+      </div>
+      <div class="table-card">
+        <div class="table-title">Lender / Inspector friction</div>
+        <table class="data-table">
+          <thead><tr><th>Lender</th><th>Avg Review</th><th>Rejections</th><th>Delay</th></tr></thead>
+          <tbody>
+            <tr><td class="td-name">First National Michigan</td><td>2.4d</td><td>3</td><td class="td-warn">7.2d</td></tr>
+            <tr><td class="td-name">Oakland County Federal</td><td>1.8d</td><td>1</td><td>1.8d</td></tr>
+            <tr><td class="td-name">Flagstar Bank</td><td>3.1d</td><td>5</td><td class="td-warn">15.5d</td></tr>
+            <tr><td class="td-name">Huntington Bank</td><td>2.2d</td><td>2</td><td>4.4d</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+<!-- ══════════════════════ DRAFTS ══════════════════════ -->
+<div class="tab-view" id="tab-drafts">
+  <div class="drafts-layout">
+    <div class="drafts-sidebar">
+      <div class="sidebar-header">
+        <div class="sidebar-stats">82 lots · $25.8M · 12 lenders</div>
+        <input class="sidebar-search" placeholder="Filter lots..." oninput="filterLots(this.value)">
+      </div>
+      <div class="sidebar-list" id="lot-list"></div>
+    </div>
+    <div class="drafts-main">
+      <div class="drafts-header">
+        <div>
+          <div class="drafts-title">May 2026 Draws</div>
+          <div class="drafts-meta">$25.8M · 82 lots · 12 lenders</div>
+        </div>
+        <button class="run-btn" onclick="runDrawCycle()">Run May draw cycle →</button>
+      </div>
+      <div class="drafts-scroll" id="drafts-scroll"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════ AGENTS ══════════════════════ -->
+<div class="tab-view" id="tab-agents">
+  <div class="agents-layout">
+    <div class="agents-sidebar" id="agent-sidebar"></div>
+    <div class="agent-detail" id="agent-detail"></div>
+  </div>
+</div>
+
+<!-- ══════════════════════ SETTINGS ══════════════════════ -->
+<div class="tab-view" id="tab-settings">
+  <div style="padding:40px;color:#9ca3af;font-size:14px">Settings · PineCove Building</div>
+</div>
+
+<script>
+// ── TAB SWITCHING ──
+function switchTab(tab, el) {
+  document.querySelectorAll('.tab-view').forEach(v => v.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('tab-' + tab).classList.add('active');
+  el.classList.add('active');
+  if(tab === 'dashboard') { setTimeout(() => { drawCycleChart(); drawStackedChart(); }, 50); }
+  if(tab === 'agents') renderAgentDetail(currentAgent);
+}
+
+// ── DASHBOARD CHARTS ──
+window.addEventListener('load', () => {
+  setTimeout(() => {
+    drawCycleChart();
+    drawStackedChart();
+  }, 100);
+  renderLotList();
+  renderDrafts();
+  renderAgentSidebar();
+  renderAgentDetail('lienwaiver');
+});
+
+const months = ['Pre-Relay', 'Apr', 'May', 'Jun (proj)'];
+const cycleData = [18.2, 15.8, 11.4, 9.2];
+const PROJECTED_IDX = 3;
+const TARGET = 10;
+
+function drawCycleChart() {
+  const canvas = document.getElementById('cycleChart');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth, H = 180;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { left: 36, right: 12, top: 20, bottom: 28 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+  const maxVal = 22;
+  const barW = (chartW / months.length) * 0.55;
+  const gap = chartW / months.length;
+
+  // Grid lines
+  ctx.strokeStyle = '#f3f4f6';
+  ctx.lineWidth = 1;
+  [0, 5, 10, 15, 20].forEach(v => {
+    const y = pad.top + chartH - (v / maxVal) * chartH;
+    ctx.beginPath(); ctx.moveTo(pad.left, y); ctx.lineTo(W - pad.right, y); ctx.stroke();
+    ctx.fillStyle = '#9ca3af'; ctx.font = '10px -apple-system,sans-serif';
+    ctx.textAlign = 'right';
+    ctx.fillText(v + 'd', pad.left - 4, y + 3);
+  });
+
+  // Relay launched label
+  const relayX = pad.left + gap * 1;
+  ctx.strokeStyle = '#6366f120';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([3, 3]);
+  ctx.beginPath(); ctx.moveTo(relayX, pad.top); ctx.lineTo(relayX, pad.top + chartH); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#6366f1'; ctx.font = 'bold 9px -apple-system,sans-serif';
+  ctx.textAlign = 'center';
+  ctx.fillText('▶ Relay launched', relayX, pad.top + 10);
+
+  // Bars
+  months.forEach((m, i) => {
+    const val = cycleData[i];
+    const barH = (val / maxVal) * chartH;
+    const x = pad.left + gap * i + gap * 0.225;
+    const y = pad.top + chartH - barH;
+    const isProj = i === PROJECTED_IDX;
+    const isMay = i === 2;
+
+    if (isProj) {
+      // Projected bar — striped / lighter
+      ctx.fillStyle = '#e2e8f0';
+      ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [3,3,0,0]); ctx.fill();
+      ctx.strokeStyle = '#94a3b8'; ctx.lineWidth = 1;
+      ctx.setLineDash([3,2]);
+      ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [3,3,0,0]); ctx.stroke();
+      ctx.setLineDash([]);
+    } else {
+      ctx.fillStyle = isMay ? '#374151' : i === 0 ? '#cbd5e1' : '#94a3b8';
+      ctx.beginPath(); ctx.roundRect(x, y, barW, barH, [3,3,0,0]); ctx.fill();
+    }
+
+    // Value label
+    ctx.fillStyle = isProj ? '#94a3b8' : '#374151';
+    ctx.font = isProj ? 'italic 10px -apple-system,sans-serif' : '10px -apple-system,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(val + 'd' + (isProj ? '*' : ''), x + barW / 2, y - 4);
+
+    // Month label
+    ctx.fillStyle = isProj ? '#94a3b8' : '#6b7280';
+    ctx.font = '9px -apple-system,sans-serif';
+    ctx.fillText(m, x + barW / 2, H - 6);
+  });
+
+  // Target line
+  const targetY = pad.top + chartH - (TARGET / maxVal) * chartH;
+  ctx.strokeStyle = '#16a34a';
+  ctx.lineWidth = 1;
+  ctx.setLineDash([4, 3]);
+  ctx.beginPath(); ctx.moveTo(pad.left, targetY); ctx.lineTo(W - pad.right, targetY); ctx.stroke();
+  ctx.setLineDash([]);
+  ctx.fillStyle = '#16a34a'; ctx.font = 'bold 9px -apple-system,sans-serif';
+  ctx.textAlign = 'right';
+  ctx.fillText('target 10d', W - pad.right - 2, targetY - 3);
+
+  // Projected footnote
+  ctx.fillStyle = '#9ca3af'; ctx.font = '9px -apple-system,sans-serif';
+  ctx.textAlign = 'left';
+  ctx.fillText('* projected', pad.left, H - 2);
+}
+
+function drawStackedChart() {
+  const canvas = document.getElementById('stackedChart');
+  if (!canvas) return;
+  const dpr = window.devicePixelRatio || 1;
+  const W = canvas.offsetWidth, H = 160;
+  canvas.width = W * dpr; canvas.height = H * dpr;
+  canvas.style.width = W + 'px'; canvas.style.height = H + 'px';
+  const ctx = canvas.getContext('2d');
+  ctx.scale(dpr, dpr);
+
+  const pad = { left: 12, right: 12, top: 8, bottom: 24 };
+  const chartW = W - pad.left - pad.right;
+  const chartH = H - pad.top - pad.bottom;
+  const maxVal = 20;
+  const barW = (chartW / months.length) * 0.55;
+  const gap = chartW / months.length;
+  const colors = ['#c7d2fe', '#a5b4fc', '#6366f1', '#4338ca', '#1e1b4b'];
+  // proportions: waivers, coi, inspection, lender, rfi
+  const proportions = [
+    [0.36, 0.26, 0.20, 0.12, 0.06], // Pre-Relay — heavy waivers/COI
+    [0.28, 0.20, 0.26, 0.15, 0.11], // April — improving
+    [0.20, 0.15, 0.30, 0.20, 0.15], // May — waivers/COI shrinking fast
+    [0.14, 0.10, 0.34, 0.26, 0.16], // June projected — mostly inspection/lender
+  ];
+
+  months.forEach((m, i) => {
+    const total = cycleData[i];
+    const x = pad.left + gap * i + gap * 0.225;
+    let y = pad.top + chartH;
+    proportions[i].forEach((p, ci) => {
+      const segH = (total * p / maxVal) * chartH;
+      y -= segH;
+      ctx.fillStyle = colors[ci];
+      ctx.beginPath();
+      ctx.roundRect(x, y, barW, segH, ci === 0 ? [2, 2, 0, 0] : 0);
+      ctx.fill();
+    });
+    ctx.fillStyle = '#9ca3af'; ctx.font = '10px -apple-system,sans-serif';
+    ctx.textAlign = 'center';
+    ctx.fillText(total + 'd', x + barW / 2, y - 3);
+    ctx.fillText(m, x + barW / 2, H - 4);
+  });
+}
+
+// ── LOTS DATA ──
+const LOTS = [
+  {lot:23,sub:'Hartwell Plumbing',amt:210000,color:'#6366f1'},
+  {lot:23,sub:'Hartwell Plumbing',amt:210000,color:'#6366f1'},
+  {lot:24,sub:'Sierra Framing',amt:261000,color:'#f59e0b'},
+  {lot:24,sub:'Sierra Framing',amt:261000,color:'#f59e0b'},
+  {lot:25,sub:'Apex Electric',amt:308000,color:'#3b82f6'},
+  {lot:25,sub:'Apex Electric',amt:308000,color:'#3b82f6'},
+  {lot:26,sub:'Cascade Concrete',amt:311000,color:'#10b981'},
+  {lot:26,sub:'Cascade Concrete',amt:311000,color:'#10b981'},
+  {lot:27,sub:'Sunbelt HVAC',amt:345000,color:'#8b5cf6'},
+  {lot:27,sub:'Sunbelt HVAC',amt:345000,color:'#8b5cf6'},
+  {lot:28,sub:'Oakland Drywall',amt:188000,color:'#ef4444'},
+  {lot:28,sub:'Oakland Drywall',amt:188000,color:'#ef4444'},
+  {lot:29,sub:'Commerce Roofing',amt:224000,color:'#0ea5e9'},
+  {lot:30,sub:'Midwest Insulation',amt:142000,color:'#d97706'},
+  {lot:31,sub:'Detroit Windows',amt:198000,color:'#7c3aed'},
+  {lot:32,sub:'Hartwell Plumbing',amt:210000,color:'#6366f1'},
+  {lot:33,sub:'Great Lakes Paint',amt:164000,color:'#16a34a'},
+  {lot:34,sub:'Sierra Framing',amt:261000,color:'#f59e0b'},
+  {lot:35,sub:'Apex Electric',amt:308000,color:'#3b82f6'},
+  {lot:36,sub:'Sunbelt HVAC',amt:345000,color:'#8b5cf6'},
+];
+
+let selectedLot = null;
+function renderLotList(filter = '') {
+  const el = document.getElementById('lot-list');
+  const filtered = LOTS.filter(l =>
+    !filter || l.lot.toString().includes(filter) || l.sub.toLowerCase().includes(filter.toLowerCase())
+  );
+  el.innerHTML = filtered.map((l, i) => `
+    <div class="lot-item ${selectedLot === i ? 'active' : ''}" onclick="selectLot(${i})">
+      <div class="lot-dot" style="background:${l.color}"></div>
+      <div class="lot-info">
+        <div class="lot-num">Lot ${l.lot}</div>
+        <div class="lot-sub">${l.sub}</div>
+      </div>
+      <div class="lot-amt">$${(l.amt/1000).toFixed(0)}k</div>
+    </div>`).join('');
+}
+function filterLots(v) { renderLotList(v); }
+function selectLot(i) { selectedLot = i; renderLotList(); }
+
+// ── DRAFTS DATA ──
+const DRAFTS = [
+  {
+    initials:'TA', color:'#0d9488', name:'Tony Acme', company:'Acme Plumbing', role:'Owner',
+    channel:'SMS', lot:'Lot 1', amount:'$48,200', phone:'+1 248 555 0144', chars:'197/160',
+    msg:'Hey Tony — Haytham at PineCove. Need your signed conditional waiver for Lot 1 (4820 Commerce Rd, Wixom), $48,200 plumbing for May draw. Closes Friday EOD. Reply with photo or I\'ll text the DocuSign link.'
+  },
+  {
+    initials:'MH', color:'#7c3aed', name:'Mike Hartwell', company:'Hartwell Plumbing', role:'Owner',
+    channel:'SMS', lot:'Lot 23', amount:'$210,000', phone:'+1 248 555 0187', chars:'201/160',
+    msg:'Hi Mike — Haytham at PineCove. Conditional lien waiver for Lot 23 (1240 Proud Lake Dr), $210,000 plumbing package for May draw. Deadline Friday. DocuSign link coming or reply with photo.'
+  },
+  {
+    initials:'DS', color:'#d97706', name:'Dave Sierra', company:'Sierra Framing', role:'Foreman',
+    channel:'SMS', lot:'Lot 24', amount:'$261,000', phone:'+1 248 555 0203', chars:'188/160',
+    msg:'Hey Dave — Haytham at PineCove. Need conditional waiver for Lot 24 (1241 Proud Lake Dr), $261k framing. May draw closes Friday. Text back photo of signed waiver or use DocuSign link.'
+  },
+  {
+    initials:'JB', color:'#2563eb', name:'Jake Bryant', company:'Apex Electric', role:'Owner',
+    channel:'SMS', lot:'Lot 25', amount:'$308,000', phone:'+1 248 555 0221', chars:'195/160',
+    msg:'Hi Jake — Haytham at PineCove. Conditional waiver needed for Lot 25 electrical, $308k May draw. Closes Friday EOD. Reply with signed photo or I\'ll send DocuSign link.'
+  },
+  {
+    initials:'CC', color:'#059669', name:'Carl Cascade', company:'Cascade Concrete', role:'Owner',
+    channel:'SMS', lot:'Lot 26', amount:'$311,000', phone:'+1 248 555 0234', chars:'193/160',
+    msg:'Hey Carl — Haytham at PineCove. Need your conditional lien waiver for Lot 26 concrete, $311k. May draw Friday deadline. Reply with photo or text back for DocuSign link.'
+  },
+];
+
+let sentDrafts = new Set();
+function renderDrafts() {
+  const el = document.getElementById('drafts-scroll');
+  el.innerHTML = DRAFTS.map((d, i) => `
+    <div class="draft-card" id="draft-${i}">
+      <div class="draft-card-header">
+        <div class="draft-avatar" style="background:${d.color}">${d.initials}</div>
+        <div>
+          <div style="display:flex;align-items:center;gap:7px">
+            <div class="draft-name">${d.name}</div>
+            <span class="sms-badge">${d.channel}</span>
+          </div>
+          <div class="draft-company">${d.company} · ${d.role}</div>
+        </div>
+        <div class="draft-lot-info">
+          <div class="draft-lot">${d.lot}</div>
+          <div class="draft-amount">${d.amount}</div>
+        </div>
+      </div>
+      <div class="draft-message-wrap">
+        <div class="draft-message">${d.msg}</div>
+        <div class="draft-meta-row">
+          <span class="draft-phone">${d.phone} · ${d.chars}</span>
+        </div>
+      </div>
+      <div class="draft-actions">
+        <button class="skip-btn" onclick="skipDraft(${i})">Skip</button>
+        <button class="send-btn ${sentDrafts.has(i)?'sent':''}" id="send-${i}" onclick="sendDraft(${i})">
+          ${sentDrafts.has(i)?'✓ Sent':'Send'}
+        </button>
+      </div>
+    </div>`).join('');
+}
+
+function sendDraft(i) {
+  sentDrafts.add(i);
+  const btn = document.getElementById('send-' + i);
+  if(btn) { btn.textContent = '✓ Sent'; btn.classList.add('sent'); btn.disabled = true; }
+  const remaining = DRAFTS.length - sentDrafts.size;
+  document.getElementById('drafts-count').textContent = remaining;
+}
+
+function skipDraft(i) {
+  const card = document.getElementById('draft-' + i);
+  if(card) { card.style.opacity = '0.4'; card.style.pointerEvents = 'none'; }
+}
+
+function runDrawCycle() {
+  sentDrafts.clear();
+  renderDrafts();
+  document.getElementById('drafts-count').textContent = DRAFTS.length;
+}
+
+// ── AGENTS DATA ──
+const AGENTS = {
+  active: [
+    { id:'inspector', icon:'🔍', name:'Inspector Agent', desc:'Books framing/final insp...', count:4 },
+    { id:'coi', icon:'🛡', name:'COI Agent', desc:'Pulls certificates of insur...', count:2 },
+    { id:'lienwaiver', icon:'📄', name:'Lien Waiver Agent', desc:'Chases sub signatures v...', count:2 },
+    { id:'package', icon:'📦', name:'Package Agent', desc:'Assembles lender-speci...', count:2 },
+  ],
+  idle: [
+    { id:'escalation', icon:'🔔', name:'Escalation Agent', desc:'Pings Haytham when nothi...', count:2 },
+    { id:'invoice', icon:'📋', name:'Invoice Agent', desc:'Parses sub invoices and...', count:2 },
+    { id:'portal', icon:'🌐', name:'Portal Agent', desc:'Submits draws to Built /...', count:2 },
+    { id:'rescheduler', icon:'💬', name:'Rescheduler', desc:'Handles weather and ins...', count:2 },
+    { id:'voice', icon:'📞', name:'Voice Agent', desc:'Places voicemails when...', count:2 },
+  ]
+};
+
+const AGENT_COLORS = {
+  inspector:'#ede9fe',coi:'#dbeafe',lienwaiver:'#fef9c3',
+  package:'#dcfce7',escalation:'#fee2e2',invoice:'#f3f4f6',
+  portal:'#e0f2fe',rescheduler:'#fff7ed',voice:'#f0fdf4'
+};
+
+let currentAgent = 'lienwaiver';
+
+function renderAgentSidebar() {
+  const el = document.getElementById('agent-sidebar');
+  let html = `<div class="agent-section-label">ACTIVE · ${AGENTS.active.length}</div>`;
+  html += AGENTS.active.map(a => `
+    <div class="agent-item ${currentAgent===a.id?'active':''}" onclick="selectAgent('${a.id}')">
+      <div class="agent-icon-wrap" style="background:${AGENT_COLORS[a.id]}">${a.icon}</div>
+      <div class="agent-info">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-desc">${a.desc}</div>
+      </div>
+      <div class="agent-count">
+        <div class="count-dot active"></div>
+        <div class="count-num">${a.count}</div>
+      </div>
+    </div>`).join('');
+  html += `<div class="agent-section-label">IDLE · ${AGENTS.idle.length}</div>`;
+  html += AGENTS.idle.map(a => `
+    <div class="agent-item ${currentAgent===a.id?'active':''}" onclick="selectAgent('${a.id}')">
+      <div class="agent-icon-wrap" style="background:${AGENT_COLORS[a.id]}">${a.icon}</div>
+      <div class="agent-info">
+        <div class="agent-name">${a.name}</div>
+        <div class="agent-desc">${a.desc}</div>
+      </div>
+      <div class="agent-count">
+        <div class="count-dot"></div>
+        <div class="count-num">${a.count}</div>
+      </div>
+    </div>`).join('');
+  el.innerHTML = html;
+}
+
+function selectAgent(id) {
+  currentAgent = id;
+  renderAgentSidebar();
+  renderAgentDetail(id);
+}
+
+const AGENT_DETAILS = {
+  lienwaiver: {
+    icon:'📄', name:'Lien Waiver Agent',
+    desc:'Chases sub signatures via SMS · action_kind: <code>lien_waiver</code>',
+    stats:[
+      {label:'Response Rate', value:'92%', compare:'+4 pts vs Apr', up:true},
+      {label:'Avg Sign-Time', value:'1.8d', compare:'vs 4.2d pre-Relay', up:true},
+      {label:'Outstanding', value:'4', compare:'threads', neutral:true},
+      {label:'Hours Saved', value:'6.4h', compare:'this cycle', up:true},
+    ],
+    threads:[
+      {initials:'TA',color:'#0d9488',name:'Tony Acme',phone:'+1 248 555 0144',lot:'Lot 1',amount:'$48,200',lastAction:'Drafted',lastTime:'12:09 PM',nextStep:'Awaiting send',eta:'Today'},
+      {initials:'MH',color:'#7c3aed',name:'Mike Hartwell',phone:'+1 248 555 0187',lot:'Lot 23',amount:'$210,000',lastAction:'Drafted',lastTime:'12:09 PM',nextStep:'Awaiting send',eta:'Today'},
+    ],
+    context:'Currently maintains relationships with 47 subs across 6 trades. Learned 12 personality shortcuts this month (e.g. Tony Acme responds to \'short and direct\' — drop greetings). Cutoff policy: Friday 5pm ET. Escalation threshold: 3 unanswered SMS → handoff to Voice Agent.'
+  },
+  inspector: {
+    icon:'🔍', name:'Inspector Agent',
+    desc:'Books framing/final inspections · action_kind: <code>inspection</code>',
+    stats:[
+      {label:'Booking Rate', value:'98%', compare:'+2 pts vs Apr', up:true},
+      {label:'Avg Lead Time', value:'1.2d', compare:'vs 3.1d manual', up:true},
+      {label:'Outstanding', value:'4', compare:'slots needed', neutral:true},
+      {label:'Hours Saved', value:'4.2h', compare:'this cycle', up:true},
+    ],
+    threads:[
+      {initials:'OC',color:'#6366f1',name:'Oakland Co. Inspections',phone:'(248) 858-0110',lot:'Lot 31',amount:'',lastAction:'Booked',lastTime:'10:22 AM',nextStep:'Confirmed',eta:'May 30'},
+      {initials:'OC',color:'#6366f1',name:'Oakland Co. Inspections',phone:'(248) 858-0110',lot:'Lot 34',amount:'',lastAction:'Calling',lastTime:'Now',nextStep:'Awaiting pickup',eta:'Today'},
+      {initials:'OC',color:'#6366f1',name:'Oakland Co. Inspections',phone:'(248) 858-0110',lot:'Lot 35',amount:'',lastAction:'Queued',lastTime:'Pending',nextStep:'Will call tomorrow',eta:'Tomorrow'},
+      {initials:'OC',color:'#6366f1',name:'Oakland Co. Inspections',phone:'(248) 858-0110',lot:'Lot 36',amount:'',lastAction:'Queued',lastTime:'Pending',nextStep:'Will call tomorrow',eta:'Tomorrow'},
+    ],
+    context:'Books inspections with Oakland County for Lots in Commerce Township, Milford, and Wixom. Knows Inspector R. Kowalski handles framing Tue/Thu. Knows county inspection line opens at 7:30 AM. Auto-advances to next inspection in chain upon pass.'
+  },
+  coi: {
+    icon:'🛡', name:'COI Agent',
+    desc:'Pulls certificates of insurance · action_kind: <code>coi_check</code>',
+    stats:[
+      {label:'Compliance Rate', value:'88%', compare:'-4 pts vs Apr', up:false},
+      {label:'Avg Renewal Time', value:'2.1d', compare:'vs 6.4d manual', up:true},
+      {label:'Outstanding', value:'2', compare:'expiring soon', neutral:true},
+      {label:'Hours Saved', value:'3.8h', compare:'this cycle', up:true},
+    ],
+    threads:[
+      {initials:'HR',color:'#ef4444',name:'Hartwell Roofing',phone:'+1 248 555 0301',lot:'All lots',amount:'',lastAction:'COI expires May 31',lastTime:'Flagged',nextStep:'Broker contacted',eta:'May 29'},
+      {initials:'SE',color:'#f59e0b',name:'Sunbelt Electric',phone:'+1 248 555 0312',lot:'Lots 28–32',amount:'',lastAction:'COI expires Jun 3',lastTime:'Monitored',nextStep:'Reminder queued',eta:'May 31'},
+    ],
+    context:'Monitors COI expiry for 47 active subcontractors. Alerts broker 14 days before expiry and follows up every 3 days. Knows Jill Chen at Allied Insurance responds same-day. Lapse threshold: 0 tolerance — flags immediately to Haytham.'
+  },
+  package: {
+    icon:'📦', name:'Package Agent',
+    desc:'Assembles lender-specific draw packages · action_kind: <code>package</code>',
+    stats:[
+      {label:'Package Quality', value:'100%', compare:'no rejections', up:true},
+      {label:'Avg Assembly', value:'0.4h', compare:'vs 3.2h manual', up:true},
+      {label:'Outstanding', value:'2', compare:'in progress', neutral:true},
+      {label:'Hours Saved', value:'8.6h', compare:'this cycle', up:true},
+    ],
+    threads:[
+      {initials:'FN',color:'#2563eb',name:'First National Michigan',phone:'Draw dept',lot:'Lots 23–27',amount:'$1.34M',lastAction:'Assembling',lastTime:'In progress',nextStep:'Submit by 3pm',eta:'Today'},
+      {initials:'OF',color:'#059669',name:'Oakland County Federal',phone:'Draw dept',lot:'Lots 28–32',amount:'$1.07M',lastAction:'Queued',lastTime:'Pending waivers',nextStep:'Await 3 waivers',eta:'Tomorrow'},
+    ],
+    context:'Assembles packages to exact spec for 12 lenders. Knows First National Michigan requires AIA G702/G703. Knows Flagstar Bank requires wet signature on cover page. Submits via Built portal when available, email otherwise.'
+  }
+};
+
+function renderAgentDetail(id) {
+  const d = AGENT_DETAILS[id] || AGENT_DETAILS['lienwaiver'];
+  const el = document.getElementById('agent-detail');
+  const isActive = AGENTS.active.some(a => a.id === id);
+
+  let html = `
+    <div class="agent-detail-header">
+      <div class="agent-detail-left">
+        <div class="agent-detail-icon" style="background:${AGENT_COLORS[id]||'#f3f4f6'}">${d.icon}</div>
+        <div>
+          <div class="agent-detail-name">${d.name}</div>
+          <div class="agent-detail-desc">${d.desc}</div>
+        </div>
+      </div>
+      <div class="agent-controls">
+        ${isActive
+          ? `<button class="running-btn"><span class="running-dot"></span> Running</button>
+             <button class="ctrl-btn">Pause</button>
+             <button class="ctrl-btn">Stop</button>`
+          : `<button class="ctrl-btn">Start</button>`
+        }
+      </div>
+    </div>
+    <div class="agent-detail-scroll">
+      <div class="agent-stats-grid">
+        ${d.stats.map(st => `
+          <div class="agent-stat">
+            <div class="agent-stat-label">${st.label}</div>
+            <div class="agent-stat-value">${st.value}</div>
+            <div class="agent-stat-compare ${st.neutral?'neutral':st.up?'':''}">
+              ${st.up && !st.neutral ? '▲ ' : st.neutral ? '' : '▼ '}${st.compare}
+            </div>
+          </div>`).join('')}
+      </div>
+      <div class="agent-section-title">Active threads · ${d.threads.length}</div>
+      <table class="threads-table">
+        <thead>
+          <tr>
+            <th>Recipient</th><th>Lot</th><th style="text-align:right">$</th>
+            <th>Last Action</th><th>Next Step</th><th>ETA</th><th></th>
+          </tr>
+        </thead>
+        <tbody>
+          ${d.threads.map(t => `
+            <tr>
+              <td>
+                <div style="display:flex;align-items:center;gap:8px">
+                  <div class="thread-avatar" style="background:${t.color}">${t.initials}</div>
+                  <div>
+                    <div class="thread-name">${t.name}</div>
+                    <div class="thread-phone">${t.phone}</div>
+                  </div>
+                </div>
+              </td>
+              <td>${t.lot}</td>
+              <td style="text-align:right;font-size:12px;font-weight:500">${t.amount}</td>
+              <td>
+                <div class="status-badge status-drafted">${t.lastAction}</div>
+                <div style="font-size:10px;color:#9ca3af;margin-top:2px">${t.lastTime}</div>
+              </td>
+              <td class="awaiting">${t.nextStep}</td>
+              <td class="eta-today">${t.eta}</td>
+              <td style="color:#9ca3af;cursor:pointer">⋮</td>
+            </tr>`).join('')}
+        </tbody>
+      </table>
+      <div class="history-toggle">▶ Recent history · last 5</div>
+      <div class="context-card">
+        <div class="context-title">Context</div>
+        <div class="context-text">${d.context}</div>
+      </div>
+    </div>`;
+  el.innerHTML = html;
+}
+
+function approveAction(btn) {
+  btn.textContent = '✓ Approved';
+  btn.classList.add('approved');
+  btn.disabled = true;
+}
+
+function resetDemo() {
+  sentDrafts.clear();
+  renderDrafts();
+  document.getElementById('drafts-count').textContent = DRAFTS.length;
+  currentAgent = 'lienwaiver';
+  renderAgentSidebar();
+  renderAgentDetail('lienwaiver');
+  selectedLot = null;
+  renderLotList();
+}
+
+// Redraw charts on window resize
+window.addEventListener('resize', () => {
+  drawCycleChart();
+  drawStackedChart();
+});
+</script>
+</body>
+</html>
